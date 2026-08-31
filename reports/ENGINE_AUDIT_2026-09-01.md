@@ -14,6 +14,8 @@ Tanggal audit: 2026-09-01. Audit dilakukan pada fixture lokal `127.0.0.1:18080`,
 | Pipeline target-aware | 100 record | LULUS | Bug Bounty dan OSINT teragregasi pada fixture. |
 | Verifikasi multi-pass | 3 pass | LULUS | Fingerprint response konsisten dan status `TERVERIFIKASI`. |
 | Output JSON | Full/report | LULUS | JSON dapat diparse tanpa banner atau log tercampur. |
+| Audit ulang putaran 1 | Seluruh baseline dan fixture | LULUS | 25 test, 120 dispatcher, command inti, dan JSON valid. |
+| Audit ulang putaran 2 | Seluruh baseline dan fixture | LULUS | 25 test, 120 dispatcher, command inti, dan JSON valid kembali. |
 
 ## Arti status
 
@@ -30,3 +32,7 @@ Audit end-to-end seluruh 120 ID secara naif tidak digunakan sebagai satu command
 ## Perbaikan selama audit
 
 Command `full --output json` diperbaiki agar tidak mencampur banner interaktif ke stdout machine-readable. Banner sekarang hanya tampil pada mode `interactive`; laporan JSON, CSV, Markdown, HTML, dan TXT dapat diproses oleh parser tanpa noise terminal.
+
+## Audit ulang dua putaran
+
+Setelah perbaikan terakhir, quality gate dijalankan dua kali secara terpisah. Kedua putaran menghasilkan 25 test lulus, audit dispatcher 120/120 dengan 0 exception, Bug Bounty 50/50 record pada fixture, OSINT 50/50 record pada fixture, vuln multi-pass berhasil, pipeline full berhasil, dan output JSON valid. Tidak ada error baru yang ditemukan pada putaran kedua.
