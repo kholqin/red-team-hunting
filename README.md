@@ -177,3 +177,7 @@ redhunt feature RE-02 --path ./sample.bin --output json
 ```
 
 Dispatcher memvalidasi ID terhadap katalog, menjalankan executor kategori yang sesuai, dan mengembalikan evidence aktual. Fitur yang tidak dapat disimpulkan dari input yang tersedia tetap mengembalikan `INCONCLUSIVE`, `SKIPPED`, atau `NOT TESTED`; status tersebut tidak pernah diubah menjadi finding atau sukses palsu.
+
+## Fixture lab lokal untuk memenuhi prasyarat
+
+Direktori `lab/` berisi fixture HTTP yang hanya bind ke `127.0.0.1:18080`. Fixture ini menyediakan response aktual untuk header audit, cookie, CORS OPTIONS, robots.txt, sitemap.xml, OpenAPI, GraphQL GET, security.txt, JavaScript endpoint, debug marker, dan reflected marker. Jalankan `python3 lab/fixture_server.py`, lalu pindai hanya alamat lokal tersebut. Fixture dipakai untuk memverifikasi jalur executor; finding yang muncul berlaku untuk fixture, bukan otomatis untuk sistem produksi.

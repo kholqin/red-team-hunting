@@ -138,3 +138,11 @@ Semua perubahan penting pada proyek ini dicatat di dokumen ini.
 - `scripts/audit_120.py` untuk memanggil seluruh 120 dispatcher dan menulis `reports/feature-dispatch-audit.json`.
 - Dokumen `docs/IMPLEMENTATION_AUDIT.md` yang membedakan executor yang benar-benar berjalan dari finding yang memerlukan prasyarat.
 - Perbaikan root launcher agar `python3 redhunt.py` tidak tertukar dengan package `redhunt` saat dijalankan dari checkout.
+
+## [Unreleased]
+
+### Ditambahkan
+
+- Fixture HTTP lab lokal yang bind hanya ke `127.0.0.1` untuk menyediakan input aktual bagi audit header, cookie, CORS, API, robots, sitemap, security.txt, JavaScript, dan marker aman.
+- Validasi nyata terhadap fixture melalui command `bugbounty` dan `osint`.
+- Perbaikan normalisasi respons HTTP pada command OSINT dan sanitasi header sensitif pada request evidence.
