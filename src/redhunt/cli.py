@@ -212,7 +212,11 @@ def doctor():
     checks=[]
     for name,cmd in [("Python",sys.executable),("pip","pip"),("git","git"),("curl","curl"),("openssl","openssl"),("nmap","nmap"),("ffuf","ffuf"),("nuclei","nuclei"),("gobuster","gobuster"),("amass","amass"),("subfinder","subfinder"),("apktool","apktool"),("jadx","jadx"),("radare2","radare2")]: checks.append({"dependency":name,"status":"TERSEDIA" if shutil.which(cmd) else ("OPSIONAL TIDAK TERSEDIA" if name not in {"Python"} else "GAGAL")})
     for r in checks: print(f"{r['dependency']:<12} | {r['status']}")
-    if os.environ.get("TERMUX_VERSION"): say("INFORMASI","Lingkungan Termux terdeteksi; mode kompatibilitas Android digunakan.")
+    missing=[r["dependency"] for r in checks if r["status"]=="OPSIONAL TIDAK TERSEDIA"]
+    if os.environ.get("TERMUX_VERSION"):
+        say("INFORMASI","Lingkungan Termux terdeteksi; mode kompatibilitas Android digunakan.")
+        say("INFORMASI","Jalankan ./install-termux.sh untuk mencoba paket resmi yang tersedia.")
+    if missing: say("INFORMASI",f"Dependency opsional belum tersedia: {', '.join(missing)}. Fitur terkait akan berstatus SKIPPED/INCONCLUSIVE.")
 
 def main(argv=None):
     ap=argparse.ArgumentParser(prog="redhunt",description="Security toolkit non-destruktif untuk target berizin.")
