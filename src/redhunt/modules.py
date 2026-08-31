@@ -48,6 +48,22 @@ def cookie_audit(response):
     return {"status":"DETECTED","cookies":records}
 
 
+def safe_web_indicators(base, timeout=10, limiter=None):
+    parsed=urllib.parse.urlparse(base); pairs=urllib.parse.parse_qsl(parsed.query,keep_blank_values=True); checks=[]
+    if not pairs: return {"status":"NOT TESTED","reason":"target tidak memiliki parameter query yang dapat diuji secara aman","checks":[]}
+    marker="redhunt-marker-7f3a"; findings=[]
+    for name,value in pairs[:10]:
+        replaced=[(k,marker if k==name else v) for k,v in pairs]
+        probe=urllib.parse.urlunparse(parsed._replace(query=urllib.parse.urlencode(replaced)))
+        response=fetch(probe,timeout,limiter)
+        reflected=marker in response.get("body","")
+        location=response.get("headers",{}).get("Location","")
+        checks.append({"parameter":name,"status":response.get("status"),"reflected_marker":reflected,"location":location})
+        if reflected: findings.append({"type":"REFLECTION_OBSERVED","parameter":name,"evidence":"Marker inert ditemukan kembali dalam body respons aktual."})
+        if location and urllib.parse.urlparse(location).netloc and urllib.parse.urlparse(location).netloc != parsed.netloc: findings.append({"type":"EXTERNAL_REDIRECT_OBSERVED","parameter":name,"evidence":f"Location aktual mengarah ke host eksternal: {location}"})
+    return {"status":"DETECTED" if findings else "NOT DETECTED","checks":checks,"findings":findings,"marker":marker}
+
+
 def cors_audit(base, timeout=10, limiter=None):
     response=fetch(base,timeout,limiter,"OPTIONS"); headers={k.lower():v for k,v in response.get("headers",{}).items()}; origin=headers.get("access-control-allow-origin")
     return {"status":"DETECTED" if origin else "NOT DETECTED","http_status":response.get("status"),"allow_origin":origin,"evidence":{"headers":headers}}
@@ -59,6 +75,23 @@ def port_discovery(host, ports, timeout=1, concurrency=10):
             with socket.create_connection((host,port),timeout=timeout): return {"port":port,"status":"OPEN"}
         except (OSError,TimeoutError): return {"port":port,"status":"CLOSED_OR_FILTERED"}
     with ThreadPoolExecutor(max_workers=max(1,min(concurrency,50))) as pool: return [f.result() for f in as_completed([pool.submit(probe,p) for p in ports])]
+
+
+def cloud_fingerprint(response, dns_data=None):
+    headers={k.lower():v for k,v in response.get("headers",{}).items()}; body=response.get("body","").lower(); server=headers.get("server","").lower(); observed=[]
+    indicators={"AWS":["amazonaws.com","x-amz-"],"Azure":["azurewebsites.net","azure"],"GCP":["appspot.com","storage.googleapis.com"],"Cloudflare":["cf-ray","cloudflare"],"Vercel":["x-vercel-id","vercel"],"Netlify":["netlify"],"Firebase":["firebaseio.com"],"Supabase":["supabase.co"]}
+    for provider,marks in indicators.items():
+        if any(mark in body or mark in server or mark in " ".join(headers) for mark in marks): observed.append(provider)
+    storage=sorted(set(re.findall(r"(?:https?://)?[A-Za-z0-9_.-]+\\.(?:s3\\.amazonaws\\.com|blob\\.core\\.windows\\.net|storage\\.googleapis\\.com|supabase\\.co)[^\\s<>'\"]*",response.get("body",{}))))[:100]
+    metadata=sorted(set(re.findall(r"(?:169\\.254\\.169\\.254|metadata\\.google\\.internal|metadata/instance|latest/meta-data)",response.get("body",{}),re.I)))
+    return {"providers":observed,"public_storage_references":storage,"metadata_references":metadata,"evidence":{"headers":headers,"body_bytes":len(response.get("body",""))}}
+
+
+def passive_osint(base, timeout=10):
+    parsed=urllib.parse.urlparse(base); root=f"{parsed.scheme}://{parsed.netloc}"
+    security=fetch(root+"/.well-known/security.txt",timeout); security_alt=fetch(root+"/security.txt",timeout)
+    body=security.get("body","") if security.get("status")==200 else security_alt.get("body","")
+    return {"security_txt":{"status":"DETECTED" if body else "NOT DETECTED","contact":re.findall(r"(?im)^contact:\\s*(.+)$",body),"policy":re.findall(r"(?im)^policy:\\s*(.+)$",body)},"email_patterns":sorted(set(re.findall(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}",body)))[:100]}
 
 
 def reverse_static_analysis(path):

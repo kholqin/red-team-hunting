@@ -108,3 +108,7 @@ Gunakan hanya pada target yang berada dalam scope dan telah memperoleh izin. Con
 ```bash
 redhunt vuln https://target-berizin.example --output json --out findings.json
 ```
+
+## Plugin yang tersedia
+
+Plugin `plugins/http_methods` memeriksa method yang diiklankan melalui respons `OPTIONS` aktual. Plugin manager menemukannya melalui `plugin.yaml`; plugin tidak dijalankan otomatis terhadap target dan harus diintegrasikan oleh operator setelah scope dan izin dikonfirmasi.

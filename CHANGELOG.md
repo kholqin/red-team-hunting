@@ -40,3 +40,12 @@ Semua perubahan penting pada proyek ini dicatat di dokumen ini.
 - Reporting dari file JSON serta `scan list` dari SQLite.
 - Interactive mode kini menerima target pengguna dan menjalankan pipeline nyata dengan scope enforcement.
 - HTTP engine kini memiliki retry terbatas dengan exponential backoff untuk status/transient error tertentu.
+
+## [Unreleased]
+
+### Ditambahkan
+
+- Plugin `http_methods` dengan pemeriksaan OPTIONS nyata dan evidence response aktual.
+- Output tabel terminal sebagai format default.
+- Status agregat scan membedakan penyelesaian dan kondisi inconclusive akibat error pemeriksaan.
+- Pemeriksaan marker refleksi aman dan observasi redirect eksternal untuk parameter query yang memang tersedia.

@@ -1,0 +1,5 @@
+name: http-methods
+version: 0.1.0
+description: Memeriksa method HTTP yang diiklankan atau didukung oleh target berizin.
+entrypoint: main.py
+safe: true

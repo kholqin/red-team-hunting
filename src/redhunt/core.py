@@ -4,6 +4,7 @@ import csv, hashlib, html, json, re, shutil, sqlite3, subprocess, time
 from dataclasses import dataclass, asdict
 from pathlib import Path
 from threading import Lock
+import importlib.util
 from typing import Any, Iterable
 from urllib.parse import urlparse
 
@@ -79,9 +80,32 @@ class ReportWriter:
     @classmethod
     def write(cls,data,fmt,path): Path(path).write_text(cls.render(data,fmt),encoding="utf-8")
 
+class TTLCache:
+    def __init__(self,path: Path, ttl=3600): self.path=Path(path); self.ttl=float(ttl); self.path.parent.mkdir(parents=True,exist_ok=True)
+    def get(self,key):
+        if not self.path.exists(): return None
+        try:
+            data=json.loads(self.path.read_text(encoding="utf-8")); item=data.get(hashlib.sha256(key.encode()).hexdigest())
+            if item and time.time()-item["created"] <= self.ttl: return item["value"]
+        except (OSError,ValueError,KeyError,TypeError): return None
+        return None
+    def set(self,key,value):
+        data={}
+        if self.path.exists():
+            try: data=json.loads(self.path.read_text(encoding="utf-8"))
+            except (OSError,ValueError): data={}
+        data[hashlib.sha256(key.encode()).hexdigest()]={"created":time.time(),"value":value}; self.path.write_text(json.dumps(data,ensure_ascii=False),encoding="utf-8")
+
 class PluginLoader:
     def __init__(self, directory=Path("plugins")): self.directory=Path(directory)
     def discover(self): return sorted(self.directory.glob("*/plugin.yaml")) if self.directory.exists() else []
+    def load(self, plugin_dir):
+        path=Path(plugin_dir)/"main.py"
+        if not path.is_file(): raise ValueError("main.py plugin tidak ditemukan")
+        spec=importlib.util.spec_from_file_location("redhunt_plugin",path); module=importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
+        plugin=getattr(module,"Plugin",None)
+        if plugin is None or not callable(getattr(plugin,"run",None)): raise ValueError("Plugin harus menyediakan class Plugin dengan run(context)")
+        return plugin()
 
 def redact(text: str) -> str:
     return re.sub(r"(?i)(authorization|cookie|api[-_]?key|token|password|secret)(\s*[:=]\s*)\S+",r"\1\2[REDACTED]",text)
