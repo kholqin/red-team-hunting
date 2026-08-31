@@ -4,6 +4,7 @@ import argparse, csv, hashlib, json, os, re, shutil, socket, ssl, sqlite3, sys, 
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
+from .bugbounty import run_bug_bounty
 from .catalog import catalog, counts
 from .core import PluginLoader
 from .language import analyze_path
@@ -201,11 +202,17 @@ def doctor():
 
 def main(argv=None):
     ap=argparse.ArgumentParser(prog="redhunt",description="Security toolkit non-destruktif untuk target berizin.")
-    ap.add_argument("command",nargs="?",choices=["recon","subdomain","web","api","vuln","osint","reverse","full","doctor","report","plugins","interactive","scan","tls","ports","jwt","source","features"],default="doctor")
+    ap.add_argument("command",nargs="?",choices=["recon","subdomain","web","api","vuln","osint","bugbounty","reverse","full","doctor","report","plugins","interactive","scan","tls","ports","jwt","source","features"],default="doctor")
     ap.add_argument("target",nargs="?"); ap.add_argument("--path"); ap.add_argument("--token"); ap.add_argument("--input"); ap.add_argument("--output",choices=["table","json","csv","txt","html","md"],default="table"); ap.add_argument("--out"); ap.add_argument("--wordlist"); ap.add_argument("--ports",default="22,80,443,8080,8443"); ap.add_argument("--debug",action="store_true")
     args=ap.parse_args(argv); cfg=load_config(); banner() if args.command in {"interactive","full"} else None
     if args.command=="doctor": doctor(); return 0
     if args.command=="jwt": output(jwt_analyze(args.token or args.target or ""),args.output,args.out); return 0
+    if args.command=="bugbounty":
+        try:
+            target=normalize_target(args.target or "")
+            if not in_scope(target,cfg): say("GAGAL","Target ditolak oleh scope enforcement."); return 3
+            data={"target":target,"modules":run_bug_bounty(target,cfg)}; output(data,args.output,args.out); return 0
+        except ValueError as e: say("GAGAL",str(e)); return 2
     if args.command=="source":
         source=args.path or args.target
         if not source: say("GAGAL","Gunakan redhunt source --path FILE_ATAU_DIREKTORI."); return 2

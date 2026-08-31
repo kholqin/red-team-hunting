@@ -131,3 +131,7 @@ Gunakan `redhunt features` untuk melihat seluruh 50 fitur bug bounty, 50 fitur O
 ## 50 OSINT executor aktif
 
 Command `redhunt osint TARGET --output json --out osint.json` kini menjalankan seluruh 50 executor OSINT dan mengembalikan satu record ter-normalisasi untuk setiap ID `OS-01` sampai `OS-50`. Collector yang membutuhkan input khusus atau provider berizin mengembalikan `SKIPPED` dengan alasan eksplisit; collector yang dapat memakai target dan respons aktual mengembalikan evidence/provenance aktual. Tidak ada credential harvesting, breach-data retrieval, brute-force profile search, atau klaim bahwa status `SKIPPED` adalah finding.
+
+## Bug bounty executor
+
+Command `redhunt bugbounty TARGET --output json --out bugbounty.json` menjalankan aggregator untuk 50 fitur bug bounty. Modul yang dapat melakukan observasi aman akan mengumpulkan evidence aktual dari DNS, CT, TLS, HTTP, API, CORS, cookie, cloud, endpoint, atau port input. Modul yang memerlukan dua identitas, provider, path, atau persetujuan khusus akan mengembalikan `SKIPPED` atau `NOT TESTED` dan tidak membuat finding palsu.
