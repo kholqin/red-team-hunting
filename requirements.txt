@@ -1,0 +1,3 @@
+# Runtime inti hanya memakai standard library Python.
+# Instalasi opsional untuk UI kaya:
+rich>=13.7

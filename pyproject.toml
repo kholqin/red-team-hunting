@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "red-team-hunting"
+version = "0.1.0"
+description = "Reconnaissance dan security assessment non-destruktif untuk target yang berizin"
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [{name = "M4zk1pL4y Scurity"}]
+license = {file = "LICENSE"}
+dependencies = []
+
+[project.optional-dependencies]
+rich = ["rich>=13.7"]
+dev = ["pytest>=8", "ruff>=0.6"]
+
+[project.scripts]
+redhunt = "redhunt.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
