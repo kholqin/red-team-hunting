@@ -9,6 +9,7 @@ from .catalog import catalog, counts
 from .core import PluginLoader
 from .language import analyze_path
 from .osint import osint_run
+from .ui import banner as neon_banner, menu as neon_menu
 from .modules import api_document_analysis, cloud_fingerprint, cookie_audit, cors_audit, ct_subdomains, jwt_analyze, passive_osint, port_discovery, reverse_static_analysis, robots_and_sitemap, safe_web_indicators, technology, tls_audit
 
 NAME = "RED TEAM HUNTING"
@@ -92,6 +93,17 @@ def in_scope(target: str, cfg: dict) -> bool:
     match=lambda pat: host==pat.lower().lstrip("*.") or (pat.startswith("*.") and host.endswith(pat[1:].lower()))
     return bool(allowed and any(match(x) for x in allowed) and not any(match(x) for x in excluded))
 
+def sanitize_headers(headers):
+    clean={}
+    for key,value in headers.items():
+        low=key.lower()
+        if low in {"authorization","proxy-authorization","x-api-key"} or "token" in low or "password" in low:
+            clean[key]="[REDACTED]"
+        elif low=="set-cookie":
+            clean[key]=re.sub(r"(=[^;]*)", "=[REDACTED]", value, count=1)
+        else: clean[key]=value
+    return clean
+
 def request(url: str, cfg: dict, method="GET") -> tuple[int,dict,str,float]:
     started=time.time(); attempts=max(1,min(int(cfg.get("retries",2))+1,4)); delay=0.0
     for attempt in range(attempts):
@@ -99,10 +111,10 @@ def request(url: str, cfg: dict, method="GET") -> tuple[int,dict,str,float]:
         req=urllib.request.Request(url,headers={"User-Agent":UA,"Accept":"*/*"},method=method)
         try:
             with urllib.request.urlopen(req,timeout=float(cfg["timeout"])) as r:
-                body=r.read(1_000_000).decode("utf-8","replace"); return r.status,dict(r.headers),body,time.time()-started
+                body=r.read(1_000_000).decode("utf-8","replace"); return r.status,sanitize_headers(dict(r.headers)),body,time.time()-started
         except urllib.error.HTTPError as e:
             body=e.read(1_000_000).decode("utf-8","replace")
-            if e.code not in {408,425,429,500,502,503,504} or attempt==attempts-1: return e.code,dict(e.headers),body,time.time()-started
+            if e.code not in {408,425,429,500,502,503,504} or attempt==attempts-1: return e.code,sanitize_headers(dict(e.headers)),body,time.time()-started
         except Exception as e:
             if attempt==attempts-1: return 0,{"error":str(e),"attempts":attempts},"",time.time()-started
         delay=0.25*(2**attempt)
@@ -227,6 +239,7 @@ def main(argv=None):
         return 0
     if args.command=="interactive":
         try:
+            neon_banner(); neon_menu()
             chosen=input("Masukkan target berizin untuk full scan: ").strip(); target=normalize_target(chosen)
             if not in_scope(target,cfg): say("GAGAL","Target ditolak oleh scope enforcement."); return 3
             host=urllib.parse.urlparse(target).hostname; data={"target":target,"recon":{"dns":dns(target),"certificate_transparency":ct_subdomains(host,cfg["timeout"]),"tls":tls_audit(host,timeout=cfg["timeout"])},"web":headers(target,cfg),"api":api_check(target,cfg),"vulnerability":vuln_check(target,cfg),"status":"COMPLETED"}; output(data,args.output,args.out); return 0

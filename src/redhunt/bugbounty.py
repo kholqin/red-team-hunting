@@ -7,7 +7,7 @@ from .modules import api_document_analysis, cloud_fingerprint, cookie_audit, cor
 def run_bug_bounty(target, cfg):
     from .cli import dns, endpoints, headers, vuln_check, request
     host=target.split("/",3)[2].split(":",1)[0]
-    response=request(target,cfg); dns_data=dns(target); header_data=headers(target,cfg); rs=robots_and_sitemap(target,cfg["timeout"]); tech=technology(response); ct=ct_subdomains(host,cfg["timeout"])
+    response=request(target,cfg); response_http={"status":response[0],"headers":response[1],"body":response[2]}; dns_data=dns(target); header_data=headers(target,cfg); rs=robots_and_sitemap(target,cfg["timeout"]); tech=technology(response_http); ct=ct_subdomains(host,cfg["timeout"])
     context={"target":target,"host":host,"response":response,"ips":dns_data.get("ips",[]),"ct":ct.get("subdomains",[]),"tls":tls_audit(host,timeout=cfg["timeout"]),"headers":header_data,"technology":tech,"robots":rs.get("robots"),"sitemap":rs.get("sitemap")}
     skip={
         "BB-03":"WHOIS provider/client belum dikonfigurasi", "BB-04":"ASN provider belum dikonfigurasi", "BB-12":"Gunakan --wordlist secara eksplisit pada command subdomain", "BB-22":"Stored XSS tidak diuji otomatis agar tidak menulis data", "BB-23":"SQLi aktif memerlukan endpoint/parameter eksplisit dan persetujuan tambahan", "BB-24":"NoSQL test aktif tidak dijalankan tanpa endpoint/parameter eksplisit", "BB-25":"SSTI test aktif tidak dijalankan tanpa endpoint/input eksplisit", "BB-28":"LFI tidak membaca file target secara otomatis", "BB-29":"Traversal tidak dijalankan tanpa fixture/path yang disetujui", "BB-30":"IDOR memerlukan dua identitas dan resource yang disediakan operator", "BB-37":"Service banner membutuhkan port yang terbuka dan probe eksplisit", "BB-39":"Perbandingan HTTP/HTTPS membutuhkan kedua URL eksplisit", "BB-40":"Exposure report menunggu hasil port/service scan", "BB-44":"Takeover check membutuhkan provider fingerprint dan DNS CNAME aktual"}
@@ -27,7 +27,7 @@ def run_bug_bounty(target, cfg):
         "BB-16": {"status":"DETECTED" if endpoints(target,cfg).get("endpoints") else "NOT DETECTED","data":endpoints(target,cfg),"evidence":{"source":"script/endpoint extraction aktual"}},
         "BB-17": {"status":"DETECTED" if "?" in target else "NOT TESTED","data":{"parameters":[]},"evidence":{"source":"URL input aktual"}},
         "BB-18": {"status":"DETECTED" if header_data.get("missing_security_headers") else "NOT DETECTED","data":{"missing":header_data.get("missing_security_headers",[])},"evidence":{"source":"HTTP headers aktual"}},
-        "BB-19": {"status":"DETECTED" if cookie_audit(response).get("cookies") else "NOT DETECTED","data":cookie_audit(response),"evidence":{"source":"Set-Cookie aktual"}},
+        "BB-19": {"status":"DETECTED" if cookie_audit(response_http).get("cookies") else "NOT DETECTED","data":cookie_audit(response_http),"evidence":{"source":"Set-Cookie aktual"}},
         "BB-20": {"status":"DETECTED" if cors_audit(target,cfg["timeout"]).get("allow_origin") else "NOT DETECTED","data":cors_audit(target,cfg["timeout"]),"evidence":{"source":"OPTIONS response aktual"}},
         "BB-21": {"status":"DETECTED" if safe_web_indicators(target,cfg["timeout"]).get("findings") else "NOT DETECTED","data":safe_web_indicators(target,cfg["timeout"]),"evidence":{"source":"marker inert pada response aktual"}},
         "BB-26": {"status":"DETECTED" if safe_web_indicators(target,cfg["timeout"]).get("findings") else "NOT DETECTED","data":safe_web_indicators(target,cfg["timeout"]),"evidence":{"source":"Location response aktual"}},
@@ -39,9 +39,9 @@ def run_bug_bounty(target, cfg):
         "BB-35": {"status":"NOT TESTED","data":{},"evidence":{"reason":"JWT hanya dianalisis bila token diberikan eksplisit melalui command jwt"}},
         "BB-36": {"status":"NOT TESTED","data":{},"evidence":{"reason":"Gunakan command ports dengan port list eksplisit"}},
         "BB-38": {"status":context["tls"].get("status","INCONCLUSIVE"),"data":context["tls"],"evidence":{"source":"TLS handshake aktual"}},
-        "BB-41": {"status":"DETECTED" if cloud_fingerprint(response).get("providers") else "NOT DETECTED","data":cloud_fingerprint(response),"evidence":{"source":"HTTP response aktual"}},
-        "BB-42": {"status":"DETECTED" if cloud_fingerprint(response).get("public_storage_references") else "NOT DETECTED","data":{"references":cloud_fingerprint(response).get("public_storage_references",[])},"evidence":{"source":"body response aktual"}},
-        "BB-43": {"status":"DETECTED" if cloud_fingerprint(response).get("metadata_references") else "NOT DETECTED","data":{"references":cloud_fingerprint(response).get("metadata_references",[])},"evidence":{"source":"body response aktual"}},
+        "BB-41": {"status":"DETECTED" if cloud_fingerprint(response_http).get("providers") else "NOT DETECTED","data":cloud_fingerprint(response_http),"evidence":{"source":"HTTP response aktual"}},
+        "BB-42": {"status":"DETECTED" if cloud_fingerprint(response_http).get("public_storage_references") else "NOT DETECTED","data":{"references":cloud_fingerprint(response_http).get("public_storage_references",[])},"evidence":{"source":"body response aktual"}},
+        "BB-43": {"status":"DETECTED" if cloud_fingerprint(response_http).get("metadata_references") else "NOT DETECTED","data":{"references":cloud_fingerprint(response_http).get("metadata_references",[])},"evidence":{"source":"body response aktual"}},
         "BB-45": {"status":"DETECTED" if tech.get("observed") else "NOT DETECTED","data":tech,"evidence":{"source":"headers/body aktual"}},
         "BB-46": {"status":"DETECTED" if vuln_check(target,cfg).get("findings") else "NOT DETECTED","data":vuln_check(target,cfg),"evidence":{"source":"vulnerability observations aktual"}},
         "BB-47": {"status":"DETECTED","data":{"method":"rule-based severity aggregation","findings":len(vuln_check(target,cfg).get("findings",[]))},"evidence":{"source":"findings aktual; bukan CVSS claim"}},

@@ -106,3 +106,11 @@ Semua perubahan penting pada proyek ini dicatat di dokumen ini.
 
 - Command `redhunt bugbounty TARGET` yang menjalankan 50 record bug bounty dengan evidence aktual, status ter-normalisasi, dan batas keselamatan.
 - Integration test yang mengeksekusi seluruh 50 record bug bounty pada context fixture terkontrol.
+
+## [Unreleased]
+
+### Ditambahkan
+
+- Renderer CLI neon lintas platform dengan banner ASCII, branding, status warna, dan fallback `NO_COLOR`.
+- Menu interactive yang menampilkan seluruh 120 feature ID (`BB-01`–`BB-50`, `OS-01`–`OS-50`, `RE-01`–`RE-20`) beserta status executor.
+- Quality check UI yang memverifikasi 120 baris fitur pada output interactive.

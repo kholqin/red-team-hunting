@@ -135,3 +135,7 @@ Command `redhunt osint TARGET --output json --out osint.json` kini menjalankan s
 ## Bug bounty executor
 
 Command `redhunt bugbounty TARGET --output json --out bugbounty.json` menjalankan aggregator untuk 50 fitur bug bounty. Modul yang dapat melakukan observasi aman akan mengumpulkan evidence aktual dari DNS, CT, TLS, HTTP, API, CORS, cookie, cloud, endpoint, atau port input. Modul yang memerlukan dua identitas, provider, path, atau persetujuan khusus akan mengembalikan `SKIPPED` atau `NOT TESTED` dan tidak membuat finding palsu.
+
+## Tampilan CLI neon
+
+Mode `redhunt interactive` menggunakan banner ASCII dengan branding `RED TEAM HUNTING` dan `M4zk1pL4y Scurity`, tabel menu bernomor untuk seluruh 120 fitur, indikator status `AVAILABLE/PLANNED`, serta shortcut kategori. Warna otomatis dinonaktifkan ketika output bukan terminal interaktif atau ketika environment `NO_COLOR` tersedia, sehingga tetap aman dipakai pada Windows CMD, CI/CD, Termux, dan redirect file.
