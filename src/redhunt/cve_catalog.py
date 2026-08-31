@@ -25,7 +25,7 @@ def _db(path: str|Path) -> sqlite3.Connection:
 
 
 def _get(url: str, timeout: float=60.0) -> bytes:
-    req=urllib.request.Request(url,headers={"User-Agent":"RED-TEAM-HUNTING-CVE-Sync/1.0","Accept":"application/json,application/gzip"})
+    req=urllib.request.Request(url,headers={"User-Agent":"RED-TEAM-HUNTING-CVE-Sync/1.0"})
     with urllib.request.urlopen(req,timeout=timeout) as response: return response.read()
 
 
