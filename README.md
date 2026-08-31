@@ -295,3 +295,13 @@ python3 redhunt.py cve --cve-action correlate \
 Kecocokan versi eksplisit dapat berstatus `DETECTED` sebagai korelasi CVE, sedangkan product cocok tetapi versi belum cocok hanya menjadi `INCONCLUSIVE`. Jika evidence product tidak tersedia, hasilnya `NOT TESTED`. Korelasi CVE bukan bukti exploitability; temuan tetap memerlukan verifikasi non-destruktif dan pemeriksaan kondisi yang tercantum pada record CVE.
 
 Sumber data resmi: [NVD Vulnerability API](https://nvd.nist.gov/developers/vulnerabilities), [NVD Data Feeds](https://nvd.nist.gov/vuln/data-feeds), [CISA KEV Catalog](https://www.cisa.gov/resources-tools/resources/kev-catalog), dan [CVE JSON Record Format](https://cveproject.github.io/cve-schema/schema/docs/).
+
+## Layout menu numerik 001–120
+
+Mode `python3 redhunt.py` kini menampilkan banner ASCII besar **M4zk1pLay Hunting**, disclaimer berbingkai, status bar, dan menu numerik tiga kolom. Nomor `001–050` mewakili Bug Bounty, `051–100` mewakili OSINT, dan `101–120` mewakili Reverse Engineering. Nomor tersebut adalah alias visual untuk ID executor yang tetap dipertahankan di backend, sehingga memilih `001` sama dengan memilih `BB-01`.
+
+```bash
+python3 redhunt.py
+```
+
+Di prompt menu, pengguna dapat mengetik `001`, `051`, atau `120`, maupun ID lama seperti `BB-01`, `OS-01`, dan `RE-20`. Pada terminal sempit, renderer otomatis beralih ke dua atau satu kolom agar teks tidak rusak. Warna dinonaktifkan otomatis pada output non-TTY atau saat `NO_COLOR` digunakan.

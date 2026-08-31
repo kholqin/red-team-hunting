@@ -14,7 +14,7 @@ from .profiles import PROFILES, apply_profile
 from .pipeline import run as target_pipeline
 from .verification import response_fingerprint, verify_consistent
 from .cve_catalog import correlate as correlate_cves, search as search_cves, stats as cve_stats, sync_feed as sync_cve_feed, sync_years as sync_cve_years
-from .ui import banner as neon_banner, menu as neon_menu
+from .ui import banner as neon_banner, menu as neon_menu, feature_from_choice
 from .modules import api_document_analysis, cloud_fingerprint, cookie_audit, cors_audit, ct_subdomains, jwt_analyze, passive_osint, port_discovery, reverse_static_analysis, robots_and_sitemap, safe_web_indicators, technology, tls_audit
 
 NAME = "RED TEAM HUNTING"
@@ -303,10 +303,12 @@ def main(argv=None):
         try:
             while True:
                 neon_banner(); neon_menu()
-                chosen=input("Pilih ID fitur (BB-01/OS-01/RE-01), atau 0 untuk keluar: ").strip().upper()
+                chosen=input("Pilih nomor 001-120 atau ID fitur, 0 untuk keluar: ").strip().upper()
                 if chosen in {"0","Q","X","EXIT","KELUAR"}: say("INFO","Interactive selesai."); return 0
-                feature=next((f for f in catalog() if f["id"]==chosen),None)
-                if not feature: say("GAGAL","ID fitur tidak dikenal."); input("Tekan Enter untuk kembali..."); continue
+                feature_obj=feature_from_choice(chosen)
+                if not feature_obj: say("GAGAL","Nomor atau ID fitur tidak dikenal."); input("Tekan Enter untuk kembali..."); continue
+                feature={"id":feature_obj.id,"category":feature_obj.category}
+                chosen=feature_obj.id
                 target=None; path=None
                 if feature["category"] in {"BUG_BOUNTY","OSINT"}:
                     raw=input("Target URL/domain berizin: ").strip(); target=normalize_target(raw)

@@ -228,3 +228,11 @@ Repository kini memiliki panduan platform terpadu di `docs/PLATFORM_GUIDE.md` un
 - Sinkronisasi satu tahun atau seluruh feed 2002 hingga tahun berjalan melalui perintah `cve`.
 - Korelasi CVE konservatif: product dan versi harus memiliki evidence eksplisit; product tanpa kecocokan versi menghasilkan `INCONCLUSIVE`, sedangkan tanpa evidence product menghasilkan `NOT TESTED`.
 - Korelasi otomatis dari header `Server` atau `X-Powered-By` hanya jika header tersebut benar-benar muncul pada response target.
+
+## [Unreleased]
+
+### Diubah
+
+- Banner interactive diperbesar dengan branding `M4zk1pLay Hunting`, disclaimer berbingkai, status Safe Mode, Scope Enforcement, dan Evidence-Based.
+- Menu interactive sekarang menampilkan alias numerik `001–120` dalam layout tiga kolom: Bug Bounty `001–050`, OSINT `051–100`, dan Reverse Engineering `101–120`.
+- Input menu menerima nomor numerik maupun ID lama seperti `BB-01`, `OS-01`, dan `RE-20`; layout otomatis mengecil menjadi dua atau satu kolom pada terminal sempit.
