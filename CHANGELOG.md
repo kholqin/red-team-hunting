@@ -130,3 +130,11 @@ Semua perubahan penting pada proyek ini dicatat di dokumen ini.
 - Dispatcher individual `redhunt feature FEATURE_ID` untuk seluruh ID `BB-01`–`BB-50`, `OS-01`–`OS-50`, dan `RE-01`–`RE-20`.
 - Jalur executor bug bounty, OSINT, dan reverse yang mengembalikan evidence atau status prasyarat secara eksplisit.
 - Test dispatch untuk semua 120 ID dan validasi penolakan ID tidak dikenal.
+
+## [Unreleased]
+
+### Ditambahkan
+
+- `scripts/audit_120.py` untuk memanggil seluruh 120 dispatcher dan menulis `reports/feature-dispatch-audit.json`.
+- Dokumen `docs/IMPLEMENTATION_AUDIT.md` yang membedakan executor yang benar-benar berjalan dari finding yang memerlukan prasyarat.
+- Perbaikan root launcher agar `python3 redhunt.py` tidak tertukar dengan package `redhunt` saat dijalankan dari checkout.
