@@ -192,3 +192,7 @@ python3 redhunt.py full https://target-berizin.example --profile deep --output h
 ```
 
 Profile tidak mengubah status evidence menjadi sukses. Jika target tidak merespons, dependency tidak tersedia, atau bukti tidak cukup, output tetap menunjukkan kegagalan atau status `INCONCLUSIVE`.
+
+## Layout CLI bergaya Termux
+
+Mode interactive kini menggunakan layout terminal mobile yang lebih dekat dengan referensi: ASCII art besar berwarna, tiga kolom kategori, ID fitur dalam format `[BB-01]`, `[OS-01]`, `[RE-01]`, footer shortcut, serta status Safe Mode dan scope enforcement. Semua 120 entry benar-benar dirender dari katalog runtime; pengujian memverifikasi 50 Bug Bounty, 50 OSINT, dan 20 Reverse Engineering. Warna dan clear-screen otomatis dinonaktifkan pada non-TTY atau ketika `NO_COLOR`/`REDHUNT_NO_CLEAR` digunakan.

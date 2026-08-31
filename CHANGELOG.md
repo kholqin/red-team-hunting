@@ -154,3 +154,10 @@ Semua perubahan penting pada proyek ini dicatat di dokumen ini.
 - Profile runtime `PASSIVE`, `SAFE`, `STANDARD`, `AGGRESSIVE`, dan `DEEP` dengan parameter timeout, rate limit, concurrency, crawl depth, dan active-testing policy.
 - `AGGRESSIVE` memperluas discovery secara bounded namun tetap memaksa safe mode dan memblokir operasi destruktif, credential abuse, DoS, persistence, serta malware deployment.
 - Validasi CLI profile dan quality gate untuk profile baru.
+
+## [Unreleased]
+
+### Diubah
+
+- Layout interactive CLI disesuaikan menjadi terminal mobile tiga kolom dengan ASCII art berwarna, shortcut footer, kategori 120 fitur, dan status Safe Mode/scope yang terlihat.
+- Snapshot smoke test memverifikasi 50 entry Bug Bounty, 50 entry OSINT, dan 20 entry Reverse Engineering.
