@@ -256,10 +256,21 @@ def main(argv=None):
         return 0
     if args.command=="interactive":
         try:
-            neon_banner(); neon_menu()
-            chosen=input("Masukkan target berizin untuk full scan: ").strip(); target=normalize_target(chosen)
-            if not in_scope(target,cfg): say("GAGAL","Target ditolak oleh scope enforcement."); return 3
-            host=urllib.parse.urlparse(target).hostname; data={"target":target,"recon":{"dns":dns(target),"certificate_transparency":ct_subdomains(host,cfg["timeout"]),"tls":tls_audit(host,timeout=cfg["timeout"])},"web":headers(target,cfg),"api":api_check(target,cfg),"vulnerability":vuln_check(target,cfg),"status":"COMPLETED"}; output(data,args.output,args.out); return 0
+            while True:
+                neon_banner(); neon_menu()
+                chosen=input("Pilih ID fitur (BB-01/OS-01/RE-01), atau 0 untuk keluar: ").strip().upper()
+                if chosen in {"0","Q","X","EXIT","KELUAR"}: say("INFO","Interactive selesai."); return 0
+                feature=next((f for f in catalog() if f["id"]==chosen),None)
+                if not feature: say("GAGAL","ID fitur tidak dikenal."); input("Tekan Enter untuk kembali..."); continue
+                target=None; path=None
+                if feature["category"] in {"BUG_BOUNTY","OSINT"}:
+                    raw=input("Target URL/domain berizin: ").strip(); target=normalize_target(raw)
+                    if not in_scope(target,cfg): say("GAGAL","Target ditolak oleh scope enforcement."); input("Tekan Enter untuk kembali..."); continue
+                else:
+                    path=input("Path file/source/binary: ").strip()
+                result=execute(chosen,target=target,path=path,cfg=cfg)
+                output(result,args.output,args.out)
+                input("Tekan Enter untuk kembali ke menu...")
         except (EOFError,KeyboardInterrupt,ValueError) as e: say("GAGAL",f"Interactive gagal: {e}"); return 2
     if args.command=="scan":
         store=Store(config_dir()/"redhunt.db")

@@ -169,3 +169,10 @@ Semua perubahan penting pada proyek ini dicatat di dokumen ini.
 - Seluruh 120 feature entry kini berstatus `AVAILABLE` pada katalog karena memiliki jalur executor/dispatcher yang dapat dipanggil.
 - Status runtime tetap evidence-based; ketiadaan input atau bukti tidak pernah diubah menjadi `DETECTED`.
 - Dokumentasi menjelaskan perbedaan antara executor callable dan finding yang benar-benar terverifikasi.
+
+## [Unreleased]
+
+### Diubah
+
+- Interactive mode kini menerima pilihan feature ID dari pengguna, meminta input target atau path sesuai kategori, memeriksa scope, menjalankan executor, menampilkan hasil, dan kembali ke menu.
+- Pilihan keluar `0`, `q`, `x`, `exit`, dan `keluar` ditangani dengan bersih.

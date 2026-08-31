@@ -200,3 +200,18 @@ Mode interactive kini menggunakan layout terminal mobile yang lebih dekat dengan
 ## Status katalog 120 fitur
 
 Katalog kini tidak lagi menggunakan label `PLANNED`. Seluruh 120 entry berstatus `AVAILABLE` karena masing-masing memiliki jalur executor yang dapat dipanggil melalui dispatcher. Status hasil runtime tetap ditentukan oleh evidence: `DETECTED`, `NOT DETECTED`, `SKIPPED`, `NOT TESTED`, atau `INCONCLUSIVE`. Dengan demikian, `AVAILABLE` berarti implementasi dapat dipanggil, bukan bahwa setiap target pasti memiliki kerentanan.
+
+## Memilih fitur dari menu interactive
+
+Perintah `python redhunt.py interactive` sekarang menampilkan menu utama tiga kolom seperti referensi. Pengguna memilih ID, bukan hanya melihat daftar. Untuk `BB-*` dan `OS-*`, menu meminta target URL/domain lalu memeriksa scope sebelum executor dijalankan. Untuk `RE-*`, menu meminta path file/source/binary. Setelah executor selesai, hasil evidence dan status ditampilkan sebelum pengguna kembali ke menu.
+
+Contoh alur:
+
+```text
+Pilih ID fitur (BB-01/OS-01/RE-01), atau 0 untuk keluar: BB-18
+Target URL/domain berizin: https://target-berizin.example
+[hasil security header aktual]
+Tekan Enter untuk kembali ke menu...
+```
+
+Pilihan `0`, `q`, `x`, `exit`, atau `keluar` menutup interactive mode dengan bersih.
