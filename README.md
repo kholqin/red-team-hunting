@@ -258,3 +258,40 @@ python3 redhunt.py vuln https://target-berizin.example \
 ```
 
 `--verify-passes` dibatasi 2 sampai 5 pass dan `--verify-delay` dibatasi maksimal 30 detik. Pengulangan ini hanya memakai request pemeriksaan yang aman dan tidak melakukan mutasi data.
+
+## Katalog CVE nyata dan korelasi evidence
+
+RED TEAM HUNTING kini memiliki katalog CVE lokal yang bersumber dari **NVD JSON 2.0** dan penanda eksploitasi dari **CISA Known Exploited Vulnerabilities (KEV)**. Sistem menyimpan record asli, deskripsi, CVSS, CWE, vendor, product, versi, CPE, referensi, dan status KEV ke SQLite. Sistem tidak membuat template CVE sintetis dan tidak mengubah kandidat menjadi verified hanya karena nama teknologi terlihat mirip.
+
+Inisialisasi atau pembaruan satu tahun:
+
+```bash
+python3 redhunt.py cve --cve-action sync --cve-year 2025
+```
+
+Sinkronisasi seluruh feed dari 2002 hingga tahun yang dipilih:
+
+```bash
+python3 redhunt.py cve --cve-action sync --cve-all-years --cve-year 2025
+```
+
+Melihat statistik katalog dan mencari CVE:
+
+```bash
+python3 redhunt.py cve --cve-action stats
+python3 redhunt.py cve --cve-action search nginx --cve-limit 20 --output json
+```
+
+Korelasi harus menggunakan evidence product dan versi yang benar-benar teramati, misalnya dari inventaris software resmi atau hasil fingerprint yang tervalidasi:
+
+```bash
+python3 redhunt.py cve --cve-action correlate \
+  --cve-product nginx \
+  --cve-version 1.24.0 \
+  --cve-limit 20 \
+  --output json
+```
+
+Kecocokan versi eksplisit dapat berstatus `DETECTED` sebagai korelasi CVE, sedangkan product cocok tetapi versi belum cocok hanya menjadi `INCONCLUSIVE`. Jika evidence product tidak tersedia, hasilnya `NOT TESTED`. Korelasi CVE bukan bukti exploitability; temuan tetap memerlukan verifikasi non-destruktif dan pemeriksaan kondisi yang tercantum pada record CVE.
+
+Sumber data resmi: [NVD Vulnerability API](https://nvd.nist.gov/developers/vulnerabilities), [NVD Data Feeds](https://nvd.nist.gov/vuln/data-feeds), [CISA KEV Catalog](https://www.cisa.gov/resources-tools/resources/kev-catalog), dan [CVE JSON Record Format](https://cveproject.github.io/cve-schema/schema/docs/).

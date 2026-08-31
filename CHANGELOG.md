@@ -219,3 +219,12 @@ Repository kini memiliki panduan platform terpadu di `docs/PLATFORM_GUIDE.md` un
 
 - Verifikasi multi-pass dengan 2–5 pengulangan, jeda terkontrol, fingerprint evidence, dan status `TERVERIFIKASI`, `TIDAK KONSISTEN`, atau `BELUM KONKLUSIF`.
 - Opsi CLI `--verify-passes` dan `--verify-delay` untuk mengatur pengulangan pemeriksaan aman.
+
+## [Unreleased]
+
+### Ditambahkan
+
+- Katalog CVE lokal berbasis record nyata dari NVD JSON 2.0 dengan penyimpanan SQLite, pencarian, indeks vendor/product/versi, CPE, CVSS, CWE, referensi, dan penanda CISA KEV.
+- Sinkronisasi satu tahun atau seluruh feed 2002 hingga tahun berjalan melalui perintah `cve`.
+- Korelasi CVE konservatif: product dan versi harus memiliki evidence eksplisit; product tanpa kecocokan versi menghasilkan `INCONCLUSIVE`, sedangkan tanpa evidence product menghasilkan `NOT TESTED`.
+- Korelasi otomatis dari header `Server` atau `X-Powered-By` hanya jika header tersebut benar-benar muncul pada response target.

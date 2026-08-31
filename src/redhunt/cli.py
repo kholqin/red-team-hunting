@@ -13,6 +13,7 @@ from .osint import osint_run
 from .profiles import PROFILES, apply_profile
 from .pipeline import run as target_pipeline
 from .verification import response_fingerprint, verify_consistent
+from .cve_catalog import correlate as correlate_cves, search as search_cves, stats as cve_stats, sync_feed as sync_cve_feed, sync_years as sync_cve_years
 from .ui import banner as neon_banner, menu as neon_menu
 from .modules import api_document_analysis, cloud_fingerprint, cookie_audit, cors_audit, ct_subdomains, jwt_analyze, passive_osint, port_discovery, reverse_static_analysis, robots_and_sitemap, safe_web_indicators, technology, tls_audit
 
@@ -175,6 +176,8 @@ def vuln_check(target,cfg):
     observations.extend(repeat_observations)
     verification=verify_consistent(observations,"missing") if len(observations)>=2 else {"status":"INCONCLUSIVE","label":"BELUM KONKLUSIF","reason":"response pengulangan gagal"}
     result["checks"].append({"name":"security_headers","status":"DETECTED" if missing else "NOT DETECTED","verification_status":verification.get("label",verification["status"]),"http_status":s,"latency":round(lat,3),"missing":missing,"evidence":{"response_headers":h,"response_fingerprint":response_fingerprint(s,h,b),"pass_fingerprints":[x["fingerprint"] for x in observations],"jumlah_pass":len(observations)}})
+    detected_product=header_names.get("server") or header_names.get("x-powered-by")
+    result["cve_correlation"]=correlate_cves(cfg.get("cve_db",config_dir()/"cve.db"),{"product":detected_product or ""},20) if detected_product else {"status":"NOT TESTED","reason":"header Server/X-Powered-By tidak mengungkap product secara cukup untuk korelasi CVE"}
     finding_id=1
     for name in missing:
         severity="LOW" if name != "strict-transport-security" or not target.lower().startswith("https://") else "MEDIUM"
@@ -246,13 +249,29 @@ def doctor():
 
 def main(argv=None):
     ap=argparse.ArgumentParser(prog="redhunt",description="Security toolkit non-destruktif untuk target berizin.")
-    ap.add_argument("command",nargs="?",choices=["recon","subdomain","web","api","vuln","osint","bugbounty","reverse","full","doctor","report","plugins","interactive","scan","tls","ports","jwt","source","features","feature"],default="interactive")
-    ap.add_argument("target",nargs="?"); ap.add_argument("--path"); ap.add_argument("--token"); ap.add_argument("--input"); ap.add_argument("--output",choices=["table","json","csv","txt","html","md"],default="table"); ap.add_argument("--out"); ap.add_argument("--wordlist");     ap.add_argument("--ports",default="22,80,443,8080,8443"); ap.add_argument("--profile",choices=sorted(PROFILES),default=None); ap.add_argument("--verify-passes",type=int,default=3); ap.add_argument("--verify-delay",type=float,default=0.0); ap.add_argument("--debug",action="store_true")
+    ap.add_argument("command",nargs="?",choices=["recon","subdomain","web","api","vuln","osint","bugbounty","reverse","full","doctor","report","plugins","interactive","scan","tls","ports","jwt","source","features","feature","cve"],default="interactive")
+    ap.add_argument("target",nargs="?"); ap.add_argument("--path"); ap.add_argument("--token"); ap.add_argument("--input"); ap.add_argument("--output",choices=["table","json","csv","txt","html","md"],default="table"); ap.add_argument("--out"); ap.add_argument("--wordlist");     ap.add_argument("--ports",default="22,80,443,8080,8443"); ap.add_argument("--profile",choices=sorted(PROFILES),default=None); ap.add_argument("--verify-passes",type=int,default=3); ap.add_argument("--verify-delay",type=float,default=0.0); ap.add_argument("--cve-action",choices=["sync","search","stats","correlate"],default="stats"); ap.add_argument("--cve-year",type=int); ap.add_argument("--cve-all-years",action="store_true"); ap.add_argument("--cve-db"); ap.add_argument("--cve-limit",type=int,default=20); ap.add_argument("--cve-product"); ap.add_argument("--cve-version"); ap.add_argument("--debug",action="store_true")
     args=ap.parse_args(argv)
-    try: cfg=apply_profile(load_config(),args.profile); cfg["verify_passes"]=args.verify_passes; cfg["verify_delay"]=args.verify_delay
+    try: cfg=apply_profile(load_config(),args.profile); cfg["verify_passes"]=args.verify_passes; cfg["verify_delay"]=args.verify_delay; cfg["cve_db"]=args.cve_db or str(config_dir()/"cve.db")
     except ValueError as exc: say("GAGAL",str(exc)); return 2
     banner() if args.command in {"interactive","full"} else None
     if args.command=="doctor": doctor(); return 0
+    if args.command=="cve":
+        db=Path(args.cve_db or (config_dir()/"cve.db"))
+        try:
+            if args.cve_action=="sync":
+                year=args.cve_year or time.gmtime().tm_year
+                data=sync_cve_years(db,2002,year) if args.cve_all_years else sync_cve_feed(db,year)
+            elif args.cve_action=="stats": data=cve_stats(db)
+            elif args.cve_action=="search": data={"status":"COMPLETED","query":args.target or args.cve_product or "","results":search_cves(db,args.target or args.cve_product or "",args.cve_limit)}
+            else:
+                evidence={"product":args.cve_product or args.target or "","version":args.cve_version or ""}
+                if args.input:
+                    evidence=json.loads(Path(args.input).read_text(encoding="utf-8"))
+                data=correlate_cves(db,evidence,args.cve_limit)
+            output(data,args.output,args.out); return 0
+        except (OSError,ValueError,KeyError,json.JSONDecodeError) as exc:
+            say("GAGAL",f"CVE gagal: {exc}"); return 2
     if args.command=="jwt": output(jwt_analyze(args.token or args.target or ""),args.output,args.out); return 0
     if args.command=="bugbounty":
         try:
