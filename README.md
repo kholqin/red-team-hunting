@@ -240,3 +240,7 @@ python3 redhunt.py full ./sample.apk --profile safe --output json --out reverse.
 ```
 
 Pipeline tidak menganggap semua target sebagai website dan tidak membuat finding untuk tipe target yang belum memiliki adapter. Hasil yang tidak dapat diverifikasi tetap menggunakan status `SKIPPED`, `NOT TESTED`, atau `INCONCLUSIVE`.
+
+## Verifikasi dan Bahasa Indonesia
+
+Engine pemeriksaan HTTP kini menyimpan fingerprint response pertama dan pengulangan untuk mengurangi false positive. Finding header hanya berstatus terdeteksi pada hasil agregat bila hasil pengulangan konsisten; jika response berubah atau pengulangan gagal, status menjadi belum konklusif. Nilai status dan label field pada output JSON, CSV, Markdown, HTML, dan tabel diterjemahkan ke Bahasa Indonesia untuk pembacaan operator, sementara feature ID tetap dipertahankan agar dapat diotomatisasi.

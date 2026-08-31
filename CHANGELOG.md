@@ -204,3 +204,11 @@ Repository kini memiliki panduan platform terpadu di `docs/PLATFORM_GUIDE.md` un
 - Automatic target-aware pipeline untuk memilih engine berdasarkan domain, URL, IP URL, file, atau tipe input yang belum didukung.
 - Command `full` kini mengembalikan `target_kind`, profile, engine, dan record hasil fitur dengan evidence/status aktual.
 - Aggregator domain/URL dijalankan satu kali per kategori untuk mengurangi request duplikat; reverse executor dijalankan terhadap file aktual.
+
+## [Unreleased]
+
+### Ditambahkan
+
+- Decision engine untuk fingerprint response dan verifikasi konsistensi melalui pengulangan evidence.
+- Output tabel, JSON, CSV, Markdown, dan HTML dengan status serta label field Bahasa Indonesia.
+- Finding yang tidak konsisten diturunkan menjadi `BELUM KONKLUSIF`, bukan dinyatakan terverifikasi.

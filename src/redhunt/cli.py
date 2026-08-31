@@ -12,6 +12,7 @@ from .language import analyze_path
 from .osint import osint_run
 from .profiles import PROFILES, apply_profile
 from .pipeline import run as target_pipeline
+from .verification import response_fingerprint, verify_consistent
 from .ui import banner as neon_banner, menu as neon_menu
 from .modules import api_document_analysis, cloud_fingerprint, cookie_audit, cors_audit, ct_subdomains, jwt_analyze, passive_osint, port_discovery, reverse_static_analysis, robots_and_sitemap, safe_web_indicators, technology, tls_audit
 
@@ -157,10 +158,13 @@ def vuln_check(target,cfg):
     if not s:
         result["checks"].append({"name":"http_request","status":"FAILED","evidence":h.get("error","request failed")})
         return result
+    s2,h2,b2,lat2=request(target,cfg)
     header_names={k.lower():v for k,v in h.items()}
     required=["content-security-policy","strict-transport-security","x-frame-options","x-content-type-options","referrer-policy","permissions-policy"]
     missing=[name for name in required if name not in header_names]
-    result["checks"].append({"name":"security_headers","status":"DETECTED" if missing else "NOT DETECTED","http_status":s,"latency":round(lat,3),"missing":missing,"evidence":{"response_headers":h}})
+    missing2=[name for name in required if name not in {k.lower() for k in h2}]
+    verification=verify_consistent([{"missing":missing},{"missing":missing2}],"missing") if s2 else {"status":"INCONCLUSIVE","reason":"response kedua gagal"}
+    result["checks"].append({"name":"security_headers","status":"DETECTED" if missing else "NOT DETECTED","verification_status":verification["status"],"http_status":s,"latency":round(lat,3),"missing":missing,"evidence":{"response_headers":h,"response_fingerprint":response_fingerprint(s,h,b),"repeat_fingerprint":response_fingerprint(s2,h2,b2) if s2 else None}})
     finding_id=1
     for name in missing:
         severity="LOW" if name != "strict-transport-security" or not target.lower().startswith("https://") else "MEDIUM"
@@ -169,7 +173,8 @@ def vuln_check(target,cfg):
     acao=header_names.get("access-control-allow-origin")
     if acao == "*":
         result["findings"].append(asdict(Finding(f"RT-{finding_id:03d}","CORS wildcard","MEDIUM",95,target,"/","","GET","Respons aktual memuat Access-Control-Allow-Origin: *.","Origin mana pun dapat diizinkan oleh kebijakan CORS; dampak bergantung pada jenis data dan kredensial.","Batasi origin ke daftar origin tepercaya dan tinjau penggunaan kredensial CORS.",time.strftime("%Y-%m-%dT%H:%M:%SZ",time.gmtime()))))
-    result["status"]="DETECTED" if result["findings"] else "NOT DETECTED"
+    result["status"]="DETECTED" if result["findings"] and verification.get("status")=="VERIFIED" else ("INCONCLUSIVE" if result["findings"] else "NOT DETECTED")
+    for finding in result["findings"]: finding["verification_status"]=verification.get("status","INCONCLUSIVE"); finding["confidence"]=min(finding.get("confidence",0),verification.get("confidence",60))
     return result
 
 def reverse(path: str):
@@ -192,20 +197,30 @@ def overall_status(data):
     if '"status": "FAILED"' in encoded or '"status": "INCONCLUSIVE"' in encoded: return "INCONCLUSIVE"
     return "COMPLETED"
 
+STATUS_ID={"DETECTED":"TERDETEKSI","NOT DETECTED":"TIDAK TERDETEKSI","INCONCLUSIVE":"BELUM KONKLUSIF","SKIPPED":"DILEWATI","NOT TESTED":"BELUM DIUJI","COMPLETED":"SELESAI","FAILED":"GAGAL","ERROR":"GALAT","CANCELLED":"DIBATALKAN"}
+FIELD_ID={"target":"Target","target_kind":"Jenis Target","status":"Status","findings":"Temuan","evidence":"Bukti","confidence":"Keyakinan","severity":"Keparahan","timestamp":"Waktu","module":"Modul","executor":"Executor","data":"Data","reason":"Alasan"}
+
+def localized(value):
+    if isinstance(value,dict): return {FIELD_ID.get(str(k),k):localized(v) for k,v in value.items()}
+    if isinstance(value,list): return [localized(v) for v in value]
+    if isinstance(value,str): return STATUS_ID.get(value,value)
+    return value
+
 def output(data: Any, fmt: str, path: str|None):
+    display=localized(data)
     if fmt=="table":
-        rows=data if isinstance(data,list) else [{"field":k,"value":v} for k,v in data.items()]
+        rows=display if isinstance(display,list) else [{"field":k,"value":v} for k,v in display.items()]
         print("FIELD | VALUE")
         for row in rows:
             if isinstance(row,dict):
                 if "field" in row: print(f"{row['field']} | {str(row['value'])[:240]}")
                 else: print(" | ".join(f"{k}: {str(v)[:120]}" for k,v in row.items()))
         return
-    if fmt=="json": text=json.dumps(data,ensure_ascii=False,indent=2)
+    if fmt=="json": text=json.dumps(display,ensure_ascii=False,indent=2)
     elif fmt=="csv":
-        rows=data if isinstance(data,list) else [data]; keys=sorted({k for r in rows if isinstance(r,dict) for k in r}); import io; buf=io.StringIO(); w=csv.DictWriter(buf,fieldnames=keys); w.writeheader(); w.writerows(rows); text=buf.getvalue()
-    elif fmt in {"md","txt","html"}: text=("# Red Team Hunting Report\n\n"+json.dumps(data,ensure_ascii=False,indent=2)) if fmt=="md" else json.dumps(data,ensure_ascii=False,indent=2)
-    else: text=json.dumps(data,ensure_ascii=False,indent=2)
+        rows=display if isinstance(display,list) else [display]; keys=sorted({k for r in rows if isinstance(r,dict) for k in r}); import io; buf=io.StringIO(); w=csv.DictWriter(buf,fieldnames=keys); w.writeheader(); w.writerows(rows); text=buf.getvalue()
+    elif fmt in {"md","txt","html"}: text=("# Laporan Red Team Hunting\n\n"+json.dumps(display,ensure_ascii=False,indent=2)) if fmt=="md" else json.dumps(display,ensure_ascii=False,indent=2)
+    else: text=json.dumps(display,ensure_ascii=False,indent=2)
     if path: Path(path).write_text(text,encoding="utf-8"); say("SELESAI",f"Laporan tersimpan: {path}")
     else: print(text)
 
