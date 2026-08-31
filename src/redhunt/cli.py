@@ -177,7 +177,10 @@ def vuln_check(target,cfg):
     verification=verify_consistent(observations,"missing") if len(observations)>=2 else {"status":"INCONCLUSIVE","label":"BELUM KONKLUSIF","reason":"response pengulangan gagal"}
     result["checks"].append({"name":"security_headers","status":"DETECTED" if missing else "NOT DETECTED","verification_status":verification.get("label",verification["status"]),"http_status":s,"latency":round(lat,3),"missing":missing,"evidence":{"response_headers":h,"response_fingerprint":response_fingerprint(s,h,b),"pass_fingerprints":[x["fingerprint"] for x in observations],"jumlah_pass":len(observations)}})
     detected_product=header_names.get("server") or header_names.get("x-powered-by")
-    result["cve_correlation"]=correlate_cves(cfg.get("cve_db",config_dir()/"cve.db"),{"product":detected_product or ""},20) if detected_product else {"status":"NOT TESTED","reason":"header Server/X-Powered-By tidak mengungkap product secara cukup untuk korelasi CVE"}
+    if detected_product:
+        try: result["cve_correlation"]=correlate_cves(cfg.get("cve_db",config_dir()/"cve.db"),{"product":detected_product},20)
+        except (OSError,sqlite3.Error) as exc: result["cve_correlation"]={"status":"NOT TESTED","reason":f"katalog CVE tidak tersedia: {exc}"}
+    else: result["cve_correlation"]={"status":"NOT TESTED","reason":"header Server/X-Powered-By tidak mengungkap product secara cukup untuk korelasi CVE"}
     finding_id=1
     for name in missing:
         severity="LOW" if name != "strict-transport-security" or not target.lower().startswith("https://") else "MEDIUM"

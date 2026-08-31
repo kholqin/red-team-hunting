@@ -245,3 +245,11 @@ Repository kini memiliki panduan platform terpadu di `docs/PLATFORM_GUIDE.md` un
 - 25 test lulus dan 0 exception pada audit dispatcher 120 fitur.
 - Command `full --output json` tidak lagi mencampur banner interactive ke stdout machine-readable.
 - Laporan audit lengkap tersedia di `reports/ENGINE_AUDIT_2026-09-01.md`.
+
+## [Unreleased]
+
+### Perbaikan
+
+- Database CVE kini otomatis membuat parent directory pada saat koneksi SQLite dibuka, termasuk path cache bersarang di Termux.
+- Kegagalan membuka katalog CVE tidak lagi menghentikan `vuln` atau `BB-46`; hasil dikembalikan sebagai `NOT TESTED` dengan alasan yang jelas.
+- Validasi dua putaran terhadap fixture lokal berhasil dan seluruh 25 test tetap lulus.

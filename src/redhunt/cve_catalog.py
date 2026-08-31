@@ -16,6 +16,8 @@ CPE_RE=re.compile(r"^cpe:2\.3:[aho]:([^:]+):([^:]+):([^:]+)")
 
 
 def _db(path: str|Path) -> sqlite3.Connection:
+    path=Path(path).expanduser()
+    path.parent.mkdir(parents=True,exist_ok=True)
     db=sqlite3.connect(str(path))
     db.execute("CREATE TABLE IF NOT EXISTS cves (cve_id TEXT PRIMARY KEY, source TEXT NOT NULL, published TEXT, modified TEXT, description TEXT, severity TEXT, cvss_score REAL, cwes TEXT, kev INTEGER NOT NULL DEFAULT 0, vendors TEXT, products TEXT, versions TEXT, refs_json TEXT, cpes TEXT, raw_json TEXT NOT NULL, synced_at REAL NOT NULL)")
     db.execute("CREATE INDEX IF NOT EXISTS idx_cves_products ON cves(products)")
