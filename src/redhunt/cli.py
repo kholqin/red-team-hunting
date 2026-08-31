@@ -173,8 +173,8 @@ def vuln_check(target,cfg):
     observations=[{"missing":missing,"status":s,"fingerprint":response_fingerprint(s,h,b)}]
     if s2: observations.append({"missing":missing2,"status":s2,"fingerprint":response_fingerprint(s2,h2,b2)})
     observations.extend(repeat_observations)
-    verification=verify_consistent(observations,"missing") if len(observations)>=2 else {"status":"INCONCLUSIVE","reason":"response pengulangan gagal"}
-    result["checks"].append({"name":"security_headers","status":"DETECTED" if missing else "NOT DETECTED","verification_status":verification["status"],"http_status":s,"latency":round(lat,3),"missing":missing,"evidence":{"response_headers":h,"response_fingerprint":response_fingerprint(s,h,b),"pass_fingerprints":[x["fingerprint"] for x in observations],"jumlah_pass":len(observations)}})
+    verification=verify_consistent(observations,"missing") if len(observations)>=2 else {"status":"INCONCLUSIVE","label":"BELUM KONKLUSIF","reason":"response pengulangan gagal"}
+    result["checks"].append({"name":"security_headers","status":"DETECTED" if missing else "NOT DETECTED","verification_status":verification.get("label",verification["status"]),"http_status":s,"latency":round(lat,3),"missing":missing,"evidence":{"response_headers":h,"response_fingerprint":response_fingerprint(s,h,b),"pass_fingerprints":[x["fingerprint"] for x in observations],"jumlah_pass":len(observations)}})
     finding_id=1
     for name in missing:
         severity="LOW" if name != "strict-transport-security" or not target.lower().startswith("https://") else "MEDIUM"
@@ -184,7 +184,7 @@ def vuln_check(target,cfg):
     if acao == "*":
         result["findings"].append(asdict(Finding(f"RT-{finding_id:03d}","CORS wildcard","MEDIUM",95,target,"/","","GET","Respons aktual memuat Access-Control-Allow-Origin: *.","Origin mana pun dapat diizinkan oleh kebijakan CORS; dampak bergantung pada jenis data dan kredensial.","Batasi origin ke daftar origin tepercaya dan tinjau penggunaan kredensial CORS.",time.strftime("%Y-%m-%dT%H:%M:%SZ",time.gmtime()))))
     result["status"]="DETECTED" if result["findings"] and verification.get("status")=="VERIFIED" else ("INCONCLUSIVE" if result["findings"] else "NOT DETECTED")
-    for finding in result["findings"]: finding["verification_status"]=verification.get("status","INCONCLUSIVE"); finding["confidence"]=min(finding.get("confidence",0),verification.get("confidence",60))
+    for finding in result["findings"]: finding["verification_status"]=verification.get("label",verification.get("status","INCONCLUSIVE")); finding["confidence"]=min(finding.get("confidence",0),verification.get("confidence",60))
     return result
 
 def reverse(path: str):

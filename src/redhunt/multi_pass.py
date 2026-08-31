@@ -19,11 +19,14 @@ def run_passes(scan: Callable[[], dict], *, passes: int = 3, delay: float = 0.5,
     values=[row.get("observation",{}).get(key) for row in observations if row.get("status")=="SELESAI"]
     if len(values)<2:
         validation="BELUM KONKLUSIF"
+        internal_status="INCONCLUSIVE"
         reason="kurang dari dua pass berhasil"
     elif all(value==values[0] for value in values):
         validation="TERVERIFIKASI"
+        internal_status="VERIFIED"
         reason="fingerprint evidence konsisten pada seluruh pass berhasil"
     else:
         validation="TIDAK KONSISTEN"
+        internal_status="INCONCLUSIVE"
         reason="fingerprint evidence berbeda antar-pass"
-    return {"jumlah_pass":passes,"pass_berhasil":len(values),"validasi":validation,"alasan":reason,"pass":observations}
+    return {"jumlah_pass":passes,"pass_berhasil":len(values),"status":internal_status,"validasi":validation,"alasan":reason,"pass":observations}
