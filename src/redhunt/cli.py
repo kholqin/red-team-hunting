@@ -254,7 +254,7 @@ def main(argv=None):
     args=ap.parse_args(argv)
     try: cfg=apply_profile(load_config(),args.profile); cfg["verify_passes"]=args.verify_passes; cfg["verify_delay"]=args.verify_delay; cfg["cve_db"]=args.cve_db or str(config_dir()/"cve.db")
     except ValueError as exc: say("GAGAL",str(exc)); return 2
-    banner() if args.command in {"interactive","full"} else None
+    banner() if args.command=="interactive" else None
     if args.command=="doctor": doctor(); return 0
     if args.command=="cve":
         db=Path(args.cve_db or (config_dir()/"cve.db"))

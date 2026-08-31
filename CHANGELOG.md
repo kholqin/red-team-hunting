@@ -236,3 +236,12 @@ Repository kini memiliki panduan platform terpadu di `docs/PLATFORM_GUIDE.md` un
 - Banner interactive diperbesar dengan branding `M4zk1pLay Hunting`, disclaimer berbingkai, status Safe Mode, Scope Enforcement, dan Evidence-Based.
 - Menu interactive sekarang menampilkan alias numerik `001–120` dalam layout tiga kolom: Bug Bounty `001–050`, OSINT `051–100`, dan Reverse Engineering `101–120`.
 - Input menu menerima nomor numerik maupun ID lama seperti `BB-01`, `OS-01`, dan `RE-20`; layout otomatis mengecil menjadi dua atau satu kolom pada terminal sempit.
+
+## [Unreleased]
+
+### Audit dan perbaikan
+
+- Audit lokal mencakup 120 dispatcher, 50 Bug Bounty, 50 OSINT, 20 Reverse Engineering, pipeline target-aware, verifikasi multi-pass, dan output JSON.
+- 25 test lulus dan 0 exception pada audit dispatcher 120 fitur.
+- Command `full --output json` tidak lagi mencampur banner interactive ke stdout machine-readable.
+- Laporan audit lengkap tersedia di `reports/ENGINE_AUDIT_2026-09-01.md`.
