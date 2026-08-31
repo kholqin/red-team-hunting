@@ -139,3 +139,29 @@ Command `redhunt bugbounty TARGET --output json --out bugbounty.json` menjalanka
 ## Tampilan CLI neon
 
 Mode `redhunt interactive` menggunakan banner ASCII dengan branding `RED TEAM HUNTING` dan `M4zk1pL4y Scurity`, tabel menu bernomor untuk seluruh 120 fitur, indikator status `AVAILABLE/PLANNED`, serta shortcut kategori. Warna otomatis dinonaktifkan ketika output bukan terminal interaktif atau ketika environment `NO_COLOR` tersedia, sehingga tetap aman dipakai pada Windows CMD, CI/CD, Termux, dan redirect file.
+
+## Runner paralel bug bounty dan OSINT
+
+Skrip `scripts/parallel_scan.py` menjalankan command `bugbounty` dan `osint` secara paralel untuk setiap target yang tercantum pada file target. Scope JSON wajib diberikan sehingga target di luar domain yang diizinkan ditolak sebelum job dimulai. Runner juga membatasi jumlah worker, timeout setiap modul, jumlah target, dan mendukung pembatalan melalui `Ctrl-C` atau SIGTERM.
+
+Contoh konfigurasi dan eksekusi:
+
+```bash
+cat > scope.json <<'JSON'
+{"allowed": ["example.com", "*.owned.example.net"]}
+JSON
+
+cat > targets.txt <<'EOF'
+https://example.com
+https://app.owned.example.net
+EOF
+
+python3 scripts/parallel_scan.py \
+  --targets targets.txt \
+  --scope scope.json \
+  --workers 2 \
+  --module-timeout 180 \
+  --output-dir reports/parallel
+```
+
+Runner membuat satu file JSON per kombinasi target/modul dan `manifest.json` yang memuat status, return code, elapsed time, stdout/stderr terbatas, dan lokasi laporan. Nilai exit code `0` berarti seluruh job selesai; nilai `1` berarti ada job gagal, timeout, atau tidak selesai; nilai `2` berarti input atau scope ditolak. Runner tidak melakukan eksploitasi, brute force, credential collection, atau bypass kontrol akses.

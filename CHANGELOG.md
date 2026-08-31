@@ -114,3 +114,11 @@ Semua perubahan penting pada proyek ini dicatat di dokumen ini.
 - Renderer CLI neon lintas platform dengan banner ASCII, branding, status warna, dan fallback `NO_COLOR`.
 - Menu interactive yang menampilkan seluruh 120 feature ID (`BB-01`–`BB-50`, `OS-01`–`OS-50`, `RE-01`–`RE-20`) beserta status executor.
 - Quality check UI yang memverifikasi 120 baris fitur pada output interactive.
+
+## [Unreleased]
+
+### Ditambahkan
+
+- `scripts/parallel_scan.py` untuk menjalankan modul `bugbounty` dan `osint` secara paralel pada daftar target yang wajib lolos scope.
+- Batas worker 1–8, timeout modul, jumlah target, retry internal CLI, logging, cancellation, manifest, dan laporan JSON terpisah per target/modul.
+- Test untuk normalisasi URL, penolakan credential/query pada target, scope wildcard, dan penolakan target di luar scope.
