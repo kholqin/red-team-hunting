@@ -81,3 +81,11 @@ Semua perubahan penting pada proyek ini dicatat di dokumen ini.
 - Deteksi import/use, symbol, embedded secret dengan redaction, dangerous execution, unsafe deserialization, weak cryptography, dynamic SQL, insecure TLS/HTTP, unsafe HTML sink, serta smart-contract indicators.
 - Evidence source-code menyertakan path, nomor baris, rule ID, severity, confidence, snippet tersanitasi, dan remediation.
 - Test untuk ekstensi Python, TypeScript, Solidity, Rust, SQL, secret redaction, dan unknown language.
+
+## [Unreleased]
+
+### Ditambahkan
+
+- Katalog terstruktur untuk seluruh 50 bug bounty, 50 OSINT, dan 20 reverse engineering dengan ID unik, executor, safety class, dan status yang dapat diaudit.
+- Command `redhunt features` dengan filter kategori untuk meninjau coverage dan mencegah klaim fitur yang belum memiliki backend.
+- Test katalog memastikan jumlah 120 fitur dan keunikan ID.

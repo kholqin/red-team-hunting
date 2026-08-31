@@ -123,3 +123,7 @@ redhunt source --path ./Contract.sol --output html --out contract-report.html
 ```
 
 Analyzer menghasilkan language detection, SHA-256, import/use, symbol, secret indicator dengan redaction, dangerous execution/deserialization, weak crypto, dynamic SQL, insecure HTTP/TLS, unsafe HTML sink, dan smart-contract risk indicators. Hasil adalah **static indicator** dengan path dan nomor baris, bukan klaim exploitability. Kode target tidak dijalankan.
+
+## Katalog 120 fitur
+
+Gunakan `redhunt features` untuk melihat seluruh 50 fitur bug bounty, 50 fitur OSINT, dan 20 fitur reverse engineering beserta executor dan status implementasinya. Filter kategori tersedia melalui `redhunt features BUG_BOUNTY`, `redhunt features OSINT`, atau `redhunt features REVERSE`. Status katalog bersifat audit-able: `AVAILABLE` berarti executor nyata tersedia; `PLANNED` berarti belum boleh dianggap sebagai hasil scan dan tidak menghasilkan finding palsu.
