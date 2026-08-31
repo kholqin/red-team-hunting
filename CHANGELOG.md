@@ -65,3 +65,9 @@ Semua perubahan penting pada proyek ini dicatat di dokumen ini.
 - API document analyzer untuk OpenAPI/Swagger dan observasi GraphQL GET dengan evidence respons aktual.
 - JWT analyzer read-only yang mendekode header/claims tanpa memverifikasi, memalsukan, atau mengirim token.
 - Launcher root diperbaiki agar `python redhunt.py` berjalan dari checkout tanpa konflik nama package.
+
+## [Unreleased]
+
+### Diubah
+
+- Schema SQLite diperluas untuk entitas project, target, domain, subdomain, IP, port, service, technology, endpoint, parameter, finding, evidence, OSINT, reverse result, job, dan log.

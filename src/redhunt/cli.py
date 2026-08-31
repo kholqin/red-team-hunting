@@ -31,6 +31,8 @@ class Store:
         path.parent.mkdir(parents=True, exist_ok=True); self.path = path
         with sqlite3.connect(path) as db:
             db.execute("CREATE TABLE IF NOT EXISTS scans (id TEXT PRIMARY KEY, target TEXT, mode TEXT, status TEXT, started REAL, ended REAL, result TEXT)")
+            for table in ("projects","targets","domains","subdomains","ips","ports","services","technologies","endpoints","parameters","findings","evidence","osint_results","reverse_results","scan_jobs","logs"):
+                db.execute(f"CREATE TABLE IF NOT EXISTS {table} (id INTEGER PRIMARY KEY AUTOINCREMENT, scan_id TEXT, target TEXT, data TEXT, created REAL)")
     def save(self, scan_id: str, target: str, mode: str, status: str, result: dict):
         with sqlite3.connect(self.path) as db:
             db.execute("INSERT OR REPLACE INTO scans VALUES (?,?,?,?,?,?,?)", (scan_id,target,mode,status,result.get("started",0),time.time(),json.dumps(result)))
