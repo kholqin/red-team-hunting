@@ -71,3 +71,13 @@ Semua perubahan penting pada proyek ini dicatat di dokumen ini.
 ### Diubah
 
 - Schema SQLite diperluas untuk entitas project, target, domain, subdomain, IP, port, service, technology, endpoint, parameter, finding, evidence, OSINT, reverse result, job, dan log.
+
+## [Unreleased]
+
+### Ditambahkan
+
+- Command `redhunt source --path` untuk static source analysis lintas puluhan bahasa dan format.
+- Language detection berbasis ekstensi dan file manifest/dependency.
+- Deteksi import/use, symbol, embedded secret dengan redaction, dangerous execution, unsafe deserialization, weak cryptography, dynamic SQL, insecure TLS/HTTP, unsafe HTML sink, serta smart-contract indicators.
+- Evidence source-code menyertakan path, nomor baris, rule ID, severity, confidence, snippet tersanitasi, dan remediation.
+- Test untuk ekstensi Python, TypeScript, Solidity, Rust, SQL, secret redaction, dan unknown language.

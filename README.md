@@ -112,3 +112,14 @@ redhunt vuln https://target-berizin.example --output json --out findings.json
 ## Plugin yang tersedia
 
 Plugin `plugins/http_methods` memeriksa method yang diiklankan melalui respons `OPTIONS` aktual. Plugin manager menemukannya melalui `plugin.yaml`; plugin tidak dijalankan otomatis terhadap target dan harus diintegrasikan oleh operator setelah scope dan izin dikonfirmasi.
+
+## Source-code analyzer lintas bahasa
+
+Gunakan `redhunt source --path FILE_ATAU_DIREKTORI` untuk menganalisis source code secara statis. Engine mendeteksi puluhan bahasa dan format, termasuk Java, JavaScript, TypeScript, PHP/Laravel, C/C++, C#, Python, Ruby, Go, Rust, Kotlin, Swift, Dart, R, MATLAB, Lua, Perl, Objective-C, Scala, Elixir, Haskell, Erlang, Julia, Fortran, COBOL, Assembly, SQL, PL/SQL, T-SQL, PL/pgSQL, Solidity, GDScript, Visual Basic, F#, Zig, D, Ada, Nim, Lisp, Clojure, OCaml, Move, Vyper, dan Cairo.
+
+```bash
+redhunt source --path ./src --output json --out source-findings.json
+redhunt source --path ./Contract.sol --output html --out contract-report.html
+```
+
+Analyzer menghasilkan language detection, SHA-256, import/use, symbol, secret indicator dengan redaction, dangerous execution/deserialization, weak crypto, dynamic SQL, insecure HTTP/TLS, unsafe HTML sink, dan smart-contract risk indicators. Hasil adalah **static indicator** dengan path dan nomor baris, bukan klaim exploitability. Kode target tidak dijalankan.

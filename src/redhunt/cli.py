@@ -5,6 +5,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
 from .core import PluginLoader
+from .language import analyze_path
 from .modules import api_document_analysis, cloud_fingerprint, cookie_audit, cors_audit, ct_subdomains, jwt_analyze, passive_osint, port_discovery, reverse_static_analysis, robots_and_sitemap, safe_web_indicators, technology, tls_audit
 
 NAME = "RED TEAM HUNTING"
@@ -198,11 +199,15 @@ def doctor():
 
 def main(argv=None):
     ap=argparse.ArgumentParser(prog="redhunt",description="Security toolkit non-destruktif untuk target berizin.")
-    ap.add_argument("command",nargs="?",choices=["recon","subdomain","web","api","vuln","osint","reverse","full","doctor","report","plugins","interactive","scan","tls","ports","jwt"],default="doctor")
-    ap.add_argument("target",nargs="?"); ap.add_argument("--token"); ap.add_argument("--input"); ap.add_argument("--output",choices=["table","json","csv","txt","html","md"],default="table"); ap.add_argument("--out"); ap.add_argument("--wordlist"); ap.add_argument("--ports",default="22,80,443,8080,8443"); ap.add_argument("--debug",action="store_true")
+    ap.add_argument("command",nargs="?",choices=["recon","subdomain","web","api","vuln","osint","reverse","full","doctor","report","plugins","interactive","scan","tls","ports","jwt","source"],default="doctor")
+    ap.add_argument("target",nargs="?"); ap.add_argument("--path"); ap.add_argument("--token"); ap.add_argument("--input"); ap.add_argument("--output",choices=["table","json","csv","txt","html","md"],default="table"); ap.add_argument("--out"); ap.add_argument("--wordlist"); ap.add_argument("--ports",default="22,80,443,8080,8443"); ap.add_argument("--debug",action="store_true")
     args=ap.parse_args(argv); cfg=load_config(); banner() if args.command in {"interactive","full"} else None
     if args.command=="doctor": doctor(); return 0
     if args.command=="jwt": output(jwt_analyze(args.token or args.target or ""),args.output,args.out); return 0
+    if args.command=="source":
+        source=args.path or args.target
+        if not source: say("GAGAL","Gunakan redhunt source --path FILE_ATAU_DIREKTORI."); return 2
+        output({"status":"COMPLETED","path":source,"results":analyze_path(source)},args.output,args.out); return 0
     if args.command=="plugins":
         loader=PluginLoader(); discovered=loader.discover(); print("PLUGIN | STATUS | PATH")
         for meta in discovered: print(f"{meta.parent.name} | METADATA TERSEDIA | {meta.parent}")
