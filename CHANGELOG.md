@@ -190,3 +190,9 @@ Semua perubahan penting pada proyek ini dicatat di dokumen ini.
 
 - Header menu utama kini menampilkan `M4zk1pLay Hunting` sebagai banner, blok `DISCLAIMER`, label `red_team Tools`, indikator keselamatan, kemudian 120 opsi fitur.
 - Smoke test memverifikasi urutan header dan keberadaan BB-01, OS-01, serta RE-01 pada menu.
+
+## [Unreleased]
+
+### Upgrade profesional
+
+Repository kini memiliki panduan platform terpadu di `docs/PLATFORM_GUIDE.md` untuk Termux, Kali Linux, dan macOS. `LICENSE` diperbarui dengan copyright contributor dan batas penggunaan sah, sedangkan `DISCLAIMER.md` diperluas dengan ketentuan otorisasi, privacy, credential handling, dependency, evidence, false positive, dan no-warranty.
