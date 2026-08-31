@@ -196,3 +196,7 @@ Profile tidak mengubah status evidence menjadi sukses. Jika target tidak merespo
 ## Layout CLI bergaya Termux
 
 Mode interactive kini menggunakan layout terminal mobile yang lebih dekat dengan referensi: ASCII art besar berwarna, tiga kolom kategori, ID fitur dalam format `[BB-01]`, `[OS-01]`, `[RE-01]`, footer shortcut, serta status Safe Mode dan scope enforcement. Semua 120 entry benar-benar dirender dari katalog runtime; pengujian memverifikasi 50 Bug Bounty, 50 OSINT, dan 20 Reverse Engineering. Warna dan clear-screen otomatis dinonaktifkan pada non-TTY atau ketika `NO_COLOR`/`REDHUNT_NO_CLEAR` digunakan.
+
+## Status katalog 120 fitur
+
+Katalog kini tidak lagi menggunakan label `PLANNED`. Seluruh 120 entry berstatus `AVAILABLE` karena masing-masing memiliki jalur executor yang dapat dipanggil melalui dispatcher. Status hasil runtime tetap ditentukan oleh evidence: `DETECTED`, `NOT DETECTED`, `SKIPPED`, `NOT TESTED`, atau `INCONCLUSIVE`. Dengan demikian, `AVAILABLE` berarti implementasi dapat dipanggil, bukan bahwa setiap target pasti memiliki kerentanan.

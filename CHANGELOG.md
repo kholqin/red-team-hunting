@@ -161,3 +161,11 @@ Semua perubahan penting pada proyek ini dicatat di dokumen ini.
 
 - Layout interactive CLI disesuaikan menjadi terminal mobile tiga kolom dengan ASCII art berwarna, shortcut footer, kategori 120 fitur, dan status Safe Mode/scope yang terlihat.
 - Snapshot smoke test memverifikasi 50 entry Bug Bounty, 50 entry OSINT, dan 20 entry Reverse Engineering.
+
+## [Unreleased]
+
+### Diubah
+
+- Seluruh 120 feature entry kini berstatus `AVAILABLE` pada katalog karena memiliki jalur executor/dispatcher yang dapat dipanggil.
+- Status runtime tetap evidence-based; ketiadaan input atau bukti tidak pernah diubah menjadi `DETECTED`.
+- Dokumentasi menjelaskan perbedaan antara executor callable dan finding yang benar-benar terverifikasi.
