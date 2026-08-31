@@ -196,3 +196,11 @@ Semua perubahan penting pada proyek ini dicatat di dokumen ini.
 ### Upgrade profesional
 
 Repository kini memiliki panduan platform terpadu di `docs/PLATFORM_GUIDE.md` untuk Termux, Kali Linux, dan macOS. `LICENSE` diperbarui dengan copyright contributor dan batas penggunaan sah, sedangkan `DISCLAIMER.md` diperluas dengan ketentuan otorisasi, privacy, credential handling, dependency, evidence, false positive, dan no-warranty.
+
+## [Unreleased]
+
+### Ditambahkan
+
+- Automatic target-aware pipeline untuk memilih engine berdasarkan domain, URL, IP URL, file, atau tipe input yang belum didukung.
+- Command `full` kini mengembalikan `target_kind`, profile, engine, dan record hasil fitur dengan evidence/status aktual.
+- Aggregator domain/URL dijalankan satu kali per kategori untuk mengurangi request duplikat; reverse executor dijalankan terhadap file aktual.

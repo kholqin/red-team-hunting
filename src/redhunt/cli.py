@@ -11,6 +11,7 @@ from .core import PluginLoader
 from .language import analyze_path
 from .osint import osint_run
 from .profiles import PROFILES, apply_profile
+from .pipeline import run as target_pipeline
 from .ui import banner as neon_banner, menu as neon_menu
 from .modules import api_document_analysis, cloud_fingerprint, cookie_audit, cors_audit, ct_subdomains, jwt_analyze, passive_osint, port_discovery, reverse_static_analysis, robots_and_sitemap, safe_web_indicators, technology, tls_audit
 
@@ -318,7 +319,7 @@ def main(argv=None):
     elif args.command=="api": data=api_check(target,cfg)|{"document_analysis":api_document_analysis(target,cfg["timeout"]),"cors":cors_audit(target,cfg["timeout"])}
     elif args.command=="vuln": data=vuln_check(target,cfg)|{"cors":cors_audit(target,cfg["timeout"]),"safe_web_indicators":safe_web_indicators(target,cfg["timeout"])}
     elif args.command=="full":
-        host=urllib.parse.urlparse(target).hostname; response=request(target,cfg); data={"target":target,"recon":{"dns":dns(target),"certificate_transparency":ct_subdomains(host,cfg["timeout"]),"tls":tls_audit(host,timeout=cfg["timeout"])},"web":headers(target,cfg)|{"technology":technology(response),"cookies":cookie_audit(response),"robots_sitemap":robots_and_sitemap(target,cfg["timeout"]),"endpoints":endpoints(target,cfg)},"api":api_check(target,cfg)|{"document_analysis":api_document_analysis(target,cfg["timeout"]),"cors":cors_audit(target,cfg["timeout"])},"cloud":cloud_fingerprint(response),"passive_osint":passive_osint(target,cfg["timeout"]),"vulnerability":vuln_check(target,cfg)|{"safe_web_indicators":safe_web_indicators(target,cfg["timeout"])},"started":time.time()}
+        data=target_pipeline(target,cfg,workers=cfg.get("concurrency",3))
     else: data={"error":"Perintah tidak dikenal."}
     status=overall_status(data); output(data,args.output,args.out); Store(config_dir()/"redhunt.db").save(time.strftime("RT-%Y%m%d-%H%M%S"),target,args.command,status,data); return 0
 

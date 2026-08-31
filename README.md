@@ -229,3 +229,14 @@ Perintah administratif tetap tersedia secara eksplisit, misalnya `python redhunt
 ## Header menu utama
 
 Saat tools dibuka, urutan tampilan sekarang adalah banner besar **M4zk1pLay Hunting**, blok **DISCLAIMER**, label kecil **red_team Tools**, indikator Safe Mode dan scope enforcement, kemudian menu tiga kolom berisi 120 pilihan fitur. Pengguna baru diminta memilih fitur setelah seluruh disclaimer dan menu terlihat.
+
+## Automatic target-aware engine pipeline
+
+Command `full` kini menggunakan pipeline target-aware. Engine menentukan apakah input merupakan file, domain, URL, IP URL, atau tipe lain yang belum didukung, kemudian memilih engine yang sesuai. Untuk domain/URL, aggregator Bug Bounty dan OSINT dijalankan satu kali agar tidak membuat request duplikat. Untuk file, seluruh reverse executor dijalankan terhadap file aktual. Setiap hasil membawa `target_kind`, `profile`, `engine`, feature ID, status, dan evidence.
+
+```bash
+python3 redhunt.py full https://target-berizin.example --profile standard --output json --out full.json
+python3 redhunt.py full ./sample.apk --profile safe --output json --out reverse.json
+```
+
+Pipeline tidak menganggap semua target sebagai website dan tidak membuat finding untuk tipe target yang belum memiliki adapter. Hasil yang tidak dapat diverifikasi tetap menggunakan status `SKIPPED`, `NOT TESTED`, atau `INCONCLUSIVE`.
