@@ -70,9 +70,17 @@ def normalize_target(value: str) -> str:
 def in_scope(target: str, cfg: dict) -> bool:
     if not cfg.get("scope_enforcement",True): return True
     scope_file=Path("scope.json")
-    if not scope_file.exists(): return True
-    try: rules=json.loads(scope_file.read_text(encoding="utf-8"))
-    except Exception: return False
+    if not scope_file.exists():
+        yaml_file=Path("scope.yaml")
+        if not yaml_file.exists(): return True
+        rules={"allowed":[],"excluded":[]}; section=None
+        for line in yaml_file.read_text(encoding="utf-8").splitlines():
+            stripped=line.strip()
+            if stripped in {"allowed:","excluded:"}: section=stripped[:-1]
+            elif section and stripped.startswith("-"): rules[section].append(stripped[1:].strip().strip("\"'"))
+    else:
+        try: rules=json.loads(scope_file.read_text(encoding="utf-8"))
+        except Exception: return False
     host=(urllib.parse.urlparse(target).hostname or "").lower().rstrip(".")
     allowed=rules.get("allowed",[]); excluded=rules.get("excluded",[])
     match=lambda pat: host==pat.lower().lstrip("*.") or (pat.startswith("*.") and host.endswith(pat[1:].lower()))

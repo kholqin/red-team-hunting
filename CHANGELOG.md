@@ -49,3 +49,11 @@ Semua perubahan penting pada proyek ini dicatat di dokumen ini.
 - Output tabel terminal sebagai format default.
 - Status agregat scan membedakan penyelesaian dan kondisi inconclusive akibat error pemeriksaan.
 - Pemeriksaan marker refleksi aman dan observasi redirect eksternal untuk parameter query yang memang tersedia.
+
+## [Unreleased]
+
+### Ditambahkan
+
+- Adapter subprocess aman untuk Nmap, Nuclei, Subfinder, Amass, FFUF, Gobuster, Masscan, Jadx, Apktool, dan Radare2 dengan `shell=False`, timeout, capture output, dan status `SKIPPED/FAILED` yang jujur.
+- Dukungan template `scope.yaml.example`, `docker-compose.yml`, launcher root `redhunt.py`, dan parsing scope YAML sederhana.
+- Cache TTL, plugin loader dengan validasi class `Plugin.run`, cloud fingerprint, passive OSINT, TLS audit, port discovery, reverse static analysis, dan safe web indicators.

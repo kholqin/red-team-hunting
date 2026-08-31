@@ -1,0 +1,10 @@
+target:
+  allowed:
+    - example.com
+    - "*.example.com"
+  excluded:
+    - admin.example.com
+limits:
+  requests_per_second: 5
+  concurrency: 10
+  timeout: 10

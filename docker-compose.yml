@@ -1,0 +1,8 @@
+services:
+  redhunt:
+    build: .
+    read_only: true
+    volumes:
+      - ./reports:/app/reports
+      - ./scope.yaml:/app/scope.yaml:ro
+    command: ["doctor"]
