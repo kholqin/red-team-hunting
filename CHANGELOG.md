@@ -176,3 +176,10 @@ Semua perubahan penting pada proyek ini dicatat di dokumen ini.
 
 - Interactive mode kini menerima pilihan feature ID dari pengguna, meminta input target atau path sesuai kategori, memeriksa scope, menjalankan executor, menampilkan hasil, dan kembali ke menu.
 - Pilihan keluar `0`, `q`, `x`, `exit`, dan `keluar` ditangani dengan bersih.
+
+## [Unreleased]
+
+### Diubah
+
+- Menjalankan `python redhunt.py` tanpa subcommand kini langsung membuka menu interaktif 120 fitur.
+- Menu meminta target atau path setelah feature ID dipilih dan menjalankan executor backend yang sesuai.

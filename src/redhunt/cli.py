@@ -220,7 +220,7 @@ def doctor():
 
 def main(argv=None):
     ap=argparse.ArgumentParser(prog="redhunt",description="Security toolkit non-destruktif untuk target berizin.")
-    ap.add_argument("command",nargs="?",choices=["recon","subdomain","web","api","vuln","osint","bugbounty","reverse","full","doctor","report","plugins","interactive","scan","tls","ports","jwt","source","features","feature"],default="doctor")
+    ap.add_argument("command",nargs="?",choices=["recon","subdomain","web","api","vuln","osint","bugbounty","reverse","full","doctor","report","plugins","interactive","scan","tls","ports","jwt","source","features","feature"],default="interactive")
     ap.add_argument("target",nargs="?"); ap.add_argument("--path"); ap.add_argument("--token"); ap.add_argument("--input"); ap.add_argument("--output",choices=["table","json","csv","txt","html","md"],default="table"); ap.add_argument("--out"); ap.add_argument("--wordlist"); ap.add_argument("--ports",default="22,80,443,8080,8443"); ap.add_argument("--profile",choices=sorted(PROFILES),default=None); ap.add_argument("--debug",action="store_true")
     args=ap.parse_args(argv)
     try: cfg=apply_profile(load_config(),args.profile)

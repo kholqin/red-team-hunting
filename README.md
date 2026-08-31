@@ -215,3 +215,13 @@ Tekan Enter untuk kembali ke menu...
 ```
 
 Pilihan `0`, `q`, `x`, `exit`, atau `keluar` menutup interactive mode dengan bersih.
+
+## Peluncuran langsung ke menu
+
+Mulai versi ini, menjalankan `python redhunt.py` tanpa subcommand langsung membuka menu interaktif 120 fitur. Pengguna memilih feature ID terlebih dahulu; setelah itu tools meminta URL/domain untuk Bug Bounty atau OSINT, dan path file untuk Reverse Engineering, lalu menjalankan executor yang sesuai.
+
+```bash
+python redhunt.py
+```
+
+Perintah administratif tetap tersedia secara eksplisit, misalnya `python redhunt.py doctor`, `python redhunt.py features`, dan `python redhunt.py --help`.
