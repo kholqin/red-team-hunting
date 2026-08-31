@@ -4,6 +4,7 @@ import argparse, csv, hashlib, json, os, re, shutil, socket, ssl, sqlite3, sys, 
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
+from .modules import cookie_audit, cors_audit, ct_subdomains, port_discovery, reverse_static_analysis, robots_and_sitemap, technology, tls_audit
 
 NAME = "RED TEAM HUNTING"
 BRAND = "M4zk1pL4y Scurity"
@@ -77,13 +78,20 @@ def in_scope(target: str, cfg: dict) -> bool:
     return bool(allowed and any(match(x) for x in allowed) and not any(match(x) for x in excluded))
 
 def request(url: str, cfg: dict, method="GET") -> tuple[int,dict,str,float]:
-    started=time.time(); req=urllib.request.Request(url,headers={"User-Agent":UA,"Accept":"*/*"},method=method)
-    try:
-        with urllib.request.urlopen(req,timeout=float(cfg["timeout"])) as r:
-            body=r.read(1_000_000).decode("utf-8","replace"); return r.status,dict(r.headers),body,time.time()-started
-    except urllib.error.HTTPError as e:
-        return e.code,dict(e.headers),e.read(1_000_000).decode("utf-8","replace"),time.time()-started
-    except Exception as e: return 0,{"error":str(e)},"",time.time()-started
+    started=time.time(); attempts=max(1,min(int(cfg.get("retries",2))+1,4)); delay=0.0
+    for attempt in range(attempts):
+        if delay: time.sleep(delay)
+        req=urllib.request.Request(url,headers={"User-Agent":UA,"Accept":"*/*"},method=method)
+        try:
+            with urllib.request.urlopen(req,timeout=float(cfg["timeout"])) as r:
+                body=r.read(1_000_000).decode("utf-8","replace"); return r.status,dict(r.headers),body,time.time()-started
+        except urllib.error.HTTPError as e:
+            body=e.read(1_000_000).decode("utf-8","replace")
+            if e.code not in {408,425,429,500,502,503,504} or attempt==attempts-1: return e.code,dict(e.headers),body,time.time()-started
+        except Exception as e:
+            if attempt==attempts-1: return 0,{"error":str(e),"attempts":attempts},"",time.time()-started
+        delay=0.25*(2**attempt)
+    return 0,{"error":"request gagal tanpa respons","attempts":attempts},"",time.time()-started
 
 def dns(target: str):
     host=urllib.parse.urlparse(normalize_target(target)).hostname
@@ -166,24 +174,64 @@ def doctor():
 
 def main(argv=None):
     ap=argparse.ArgumentParser(prog="redhunt",description="Security toolkit non-destruktif untuk target berizin.")
-    ap.add_argument("command",nargs="?",choices=["recon","subdomain","web","api","vuln","osint","reverse","full","doctor","report","plugins","interactive","scan"],default="doctor")
-    ap.add_argument("target",nargs="?"); ap.add_argument("--output",choices=["json","csv","txt","html","md"],default="json"); ap.add_argument("--out"); ap.add_argument("--debug",action="store_true")
+    ap.add_argument("command",nargs="?",choices=["recon","subdomain","web","api","vuln","osint","reverse","full","doctor","report","plugins","interactive","scan","tls","ports"],default="doctor")
+    ap.add_argument("target",nargs="?"); ap.add_argument("--input"); ap.add_argument("--output",choices=["json","csv","txt","html","md"],default="json"); ap.add_argument("--out"); ap.add_argument("--wordlist"); ap.add_argument("--ports",default="22,80,443,8080,8443"); ap.add_argument("--debug",action="store_true")
     args=ap.parse_args(argv); cfg=load_config(); banner() if args.command in {"interactive","full"} else None
     if args.command=="doctor": doctor(); return 0
     if args.command=="plugins": print("Direktori plugin:",Path("plugins").resolve()); return 0
-    if args.command=="interactive": print("Mode interaktif memerlukan target; gunakan redhunt full <target> atau perintah spesifik."); return 0
-    if args.command=="scan": print("Gunakan 'redhunt scan list' atau jalankan perintah pemindaian dengan target."); return 0
+    if args.command=="interactive":
+        try:
+            chosen=input("Masukkan target berizin untuk full scan: ").strip(); target=normalize_target(chosen)
+            if not in_scope(target,cfg): say("GAGAL","Target ditolak oleh scope enforcement."); return 3
+            host=urllib.parse.urlparse(target).hostname; data={"target":target,"recon":{"dns":dns(target),"certificate_transparency":ct_subdomains(host,cfg["timeout"]),"tls":tls_audit(host,timeout=cfg["timeout"])},"web":headers(target,cfg),"api":api_check(target,cfg),"vulnerability":vuln_check(target,cfg),"status":"COMPLETED"}; output(data,args.output,args.out); return 0
+        except (EOFError,KeyboardInterrupt,ValueError) as e: say("GAGAL",f"Interactive gagal: {e}"); return 2
+    if args.command=="scan":
+        store=Store(config_dir()/"redhunt.db")
+        if args.target=="list":
+            rows=store.list(); print("SCAN ID | TARGET | MODE | STATUS"); [print(f"{r[0]} | {r[1]} | {r[2]} | {r[3]}") for r in rows]; return 0
+        say("INFO","Gunakan 'redhunt scan list' untuk melihat scan yang tersimpan."); return 0
+    if args.command=="report":
+        try:
+            source=Path(args.input or args.target or "")
+            if not source.is_file(): raise ValueError("File hasil scan tidak ditemukan; gunakan --input FILE.")
+            output(json.loads(source.read_text(encoding="utf-8")),args.output,args.out); return 0
+        except (ValueError, json.JSONDecodeError, OSError) as e: say("GAGAL",f"Report gagal: {e}"); return 2
     if args.command=="reverse":
-        try: output(reverse(args.target or ""),args.output,args.out); return 0
+        try:
+            path=args.target or ""; output(reverse(path)|{"static_analysis":reverse_static_analysis(path)},args.output,args.out); return 0
         except ValueError as e: say("GAGAL",str(e)); return 2
+    if args.command in {"ports","tls"}:
+        try:
+            target=normalize_target(args.target or ""); host=urllib.parse.urlparse(target).hostname
+            if args.command=="tls": data=tls_audit(host,timeout=cfg["timeout"])
+            else: data={"host":host,"results":port_discovery(host,[int(x.strip()) for x in args.ports.split(",") if x.strip()],cfg["timeout"],cfg["concurrency"])}
+            output(data,args.output,args.out); return 0
+        except (ValueError,OSError) as e: say("GAGAL",f"Pemeriksaan {args.command} gagal: {e}"); return 2
     try: target=normalize_target(args.target or "")
     except ValueError as e: say("GAGAL",str(e)); return 2
     if not in_scope(target,cfg): say("GAGAL","Target ditolak oleh scope enforcement. Periksa scope.json."); return 3
-    if args.command in {"recon","subdomain","osint"}: data={"target":target,"dns":dns(target),"endpoints":endpoints(target,cfg)}
-    elif args.command=="web": data=headers(target,cfg)|{"endpoints":endpoints(target,cfg)}
-    elif args.command=="api": data=api_check(target,cfg)
-    elif args.command=="vuln": data=vuln_check(target,cfg)
-    elif args.command=="full": data={"target":target,"recon":{"dns":dns(target)},"web":headers(target,cfg),"api":api_check(target,cfg),"vulnerability":vuln_check(target,cfg),"started":time.time()}
+    if args.command in {"recon","subdomain"}:
+        host=urllib.parse.urlparse(target).hostname; response=request(target,cfg); data={"target":target,"dns":dns(target),"certificate_transparency":ct_subdomains(host,cfg["timeout"]),"tls":tls_audit(host,timeout=cfg["timeout"]),"endpoints":endpoints(target,cfg),"robots_sitemap":robots_and_sitemap(target,cfg["timeout"])}
+        if args.command=="subdomain" and args.wordlist:
+            word_path=Path(args.wordlist)
+            if not word_path.is_file(): say("PERINGATAN","Wordlist tidak ditemukan; enumerasi wordlist dilewati.")
+            else:
+                candidates=[x.strip().lower() for x in word_path.read_text(encoding="utf-8",errors="ignore").splitlines() if x.strip()][:10000]; resolved=[]
+                for label in candidates:
+                    fqdn=f"{label}.{host}"
+                    try:
+                        ips=sorted({x[4][0] for x in socket.getaddrinfo(fqdn,None)})
+                        if ips: resolved.append({"subdomain":fqdn,"ips":ips,"status":"RESOLVED","source":"wordlist DNS"})
+                    except socket.gaierror: continue
+                data["wordlist_subdomains"]={"tested":len(candidates),"resolved":resolved}
+    elif args.command=="osint":
+        host=urllib.parse.urlparse(target).hostname; data={"target":target,"passive_certificate_transparency":ct_subdomains(host,cfg["timeout"]),"technology":technology(request(target,cfg))}
+    elif args.command=="web":
+        response=request(target,cfg); data=headers(target,cfg)|{"technology":technology(response),"cookies":cookie_audit(response),"robots_sitemap":robots_and_sitemap(target,cfg["timeout"]),"endpoints":endpoints(target,cfg)}
+    elif args.command=="api": data=api_check(target,cfg)|{"cors":cors_audit(target,cfg["timeout"])}
+    elif args.command=="vuln": data=vuln_check(target,cfg)|{"cors":cors_audit(target,cfg["timeout"])}
+    elif args.command=="full":
+        host=urllib.parse.urlparse(target).hostname; response=request(target,cfg); data={"target":target,"recon":{"dns":dns(target),"certificate_transparency":ct_subdomains(host,cfg["timeout"]),"tls":tls_audit(host,timeout=cfg["timeout"])},"web":headers(target,cfg)|{"technology":technology(response),"cookies":cookie_audit(response),"robots_sitemap":robots_and_sitemap(target,cfg["timeout"]),"endpoints":endpoints(target,cfg)},"api":api_check(target,cfg)|{"cors":cors_audit(target,cfg["timeout"])},"vulnerability":vuln_check(target,cfg),"started":time.time()}
     else: data={"error":"Perintah tidak dikenal."}
     output(data,args.output,args.out); Store(config_dir()/"redhunt.db").save(time.strftime("RT-%Y%m%d-%H%M%S"),target,args.command,"COMPLETED",data); return 0
 
