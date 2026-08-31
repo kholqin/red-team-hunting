@@ -165,3 +165,15 @@ python3 scripts/parallel_scan.py \
 ```
 
 Runner membuat satu file JSON per kombinasi target/modul dan `manifest.json` yang memuat status, return code, elapsed time, stdout/stderr terbatas, dan lokasi laporan. Nilai exit code `0` berarti seluruh job selesai; nilai `1` berarti ada job gagal, timeout, atau tidak selesai; nilai `2` berarti input atau scope ditolak. Runner tidak melakukan eksploitasi, brute force, credential collection, atau bypass kontrol akses.
+
+## Menjalankan fitur individual
+
+Setiap feature ID memiliki jalur dispatch individual melalui command `feature`. Untuk bug bounty dan OSINT, berikan URL melalui `--input`; untuk reverse engineering, berikan file melalui `--path`.
+
+```bash
+redhunt feature BB-18 --input https://target-berizin.example --output json
+redhunt feature OS-07 --input https://target-berizin.example --output json
+redhunt feature RE-02 --path ./sample.bin --output json
+```
+
+Dispatcher memvalidasi ID terhadap katalog, menjalankan executor kategori yang sesuai, dan mengembalikan evidence aktual. Fitur yang tidak dapat disimpulkan dari input yang tersedia tetap mengembalikan `INCONCLUSIVE`, `SKIPPED`, atau `NOT TESTED`; status tersebut tidak pernah diubah menjadi finding atau sukses palsu.

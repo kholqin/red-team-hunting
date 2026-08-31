@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any
 from .bugbounty import run_bug_bounty
 from .catalog import catalog, counts
+from .dispatch import execute
 from .core import PluginLoader
 from .language import analyze_path
 from .osint import osint_run
@@ -214,7 +215,7 @@ def doctor():
 
 def main(argv=None):
     ap=argparse.ArgumentParser(prog="redhunt",description="Security toolkit non-destruktif untuk target berizin.")
-    ap.add_argument("command",nargs="?",choices=["recon","subdomain","web","api","vuln","osint","bugbounty","reverse","full","doctor","report","plugins","interactive","scan","tls","ports","jwt","source","features"],default="doctor")
+    ap.add_argument("command",nargs="?",choices=["recon","subdomain","web","api","vuln","osint","bugbounty","reverse","full","doctor","report","plugins","interactive","scan","tls","ports","jwt","source","features","feature"],default="doctor")
     ap.add_argument("target",nargs="?"); ap.add_argument("--path"); ap.add_argument("--token"); ap.add_argument("--input"); ap.add_argument("--output",choices=["table","json","csv","txt","html","md"],default="table"); ap.add_argument("--out"); ap.add_argument("--wordlist"); ap.add_argument("--ports",default="22,80,443,8080,8443"); ap.add_argument("--debug",action="store_true")
     args=ap.parse_args(argv); cfg=load_config(); banner() if args.command in {"interactive","full"} else None
     if args.command=="doctor": doctor(); return 0
@@ -229,6 +230,14 @@ def main(argv=None):
         source=args.path or args.target
         if not source: say("GAGAL","Gunakan redhunt source --path FILE_ATAU_DIREKTORI."); return 2
         output({"status":"COMPLETED","path":source,"results":analyze_path(source)},args.output,args.out); return 0
+    if args.command=="feature":
+        feature_id=args.target
+        if not feature_id: say("GAGAL","Gunakan redhunt feature FEATURE_ID --target URL atau --path FILE."); return 2
+        try:
+            target=args.input if args.input else None
+            data=execute(feature_id,target=target,path=args.path,cfg=cfg)
+            output(data,args.output,args.out); return 0
+        except ValueError as e: say("GAGAL",str(e)); return 2
     if args.command=="features":
         category=args.target.upper() if args.target and args.target.upper() in {"BUG_BOUNTY","OSINT","REVERSE"} else None
         output({"status":"CATALOG","counts":counts(),"features":catalog(category)},args.output,args.out); return 0

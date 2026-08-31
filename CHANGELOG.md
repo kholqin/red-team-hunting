@@ -122,3 +122,11 @@ Semua perubahan penting pada proyek ini dicatat di dokumen ini.
 - `scripts/parallel_scan.py` untuk menjalankan modul `bugbounty` dan `osint` secara paralel pada daftar target yang wajib lolos scope.
 - Batas worker 1–8, timeout modul, jumlah target, retry internal CLI, logging, cancellation, manifest, dan laporan JSON terpisah per target/modul.
 - Test untuk normalisasi URL, penolakan credential/query pada target, scope wildcard, dan penolakan target di luar scope.
+
+## [Unreleased]
+
+### Ditambahkan
+
+- Dispatcher individual `redhunt feature FEATURE_ID` untuk seluruh ID `BB-01`–`BB-50`, `OS-01`–`OS-50`, dan `RE-01`–`RE-20`.
+- Jalur executor bug bounty, OSINT, dan reverse yang mengembalikan evidence atau status prasyarat secara eksplisit.
+- Test dispatch untuk semua 120 ID dan validasi penolakan ID tidak dikenal.
