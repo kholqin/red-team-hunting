@@ -57,3 +57,11 @@ Semua perubahan penting pada proyek ini dicatat di dokumen ini.
 - Adapter subprocess aman untuk Nmap, Nuclei, Subfinder, Amass, FFUF, Gobuster, Masscan, Jadx, Apktool, dan Radare2 dengan `shell=False`, timeout, capture output, dan status `SKIPPED/FAILED` yang jujur.
 - Dukungan template `scope.yaml.example`, `docker-compose.yml`, launcher root `redhunt.py`, dan parsing scope YAML sederhana.
 - Cache TTL, plugin loader dengan validasi class `Plugin.run`, cloud fingerprint, passive OSINT, TLS audit, port discovery, reverse static analysis, dan safe web indicators.
+
+## [Unreleased]
+
+### Ditambahkan
+
+- API document analyzer untuk OpenAPI/Swagger dan observasi GraphQL GET dengan evidence respons aktual.
+- JWT analyzer read-only yang mendekode header/claims tanpa memverifikasi, memalsukan, atau mengirim token.
+- Launcher root diperbaiki agar `python redhunt.py` berjalan dari checkout tanpa konflik nama package.

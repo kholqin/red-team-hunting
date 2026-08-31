@@ -5,7 +5,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
 from .core import PluginLoader
-from .modules import cloud_fingerprint, cookie_audit, cors_audit, ct_subdomains, passive_osint, port_discovery, reverse_static_analysis, robots_and_sitemap, safe_web_indicators, technology, tls_audit
+from .modules import api_document_analysis, cloud_fingerprint, cookie_audit, cors_audit, ct_subdomains, jwt_analyze, passive_osint, port_discovery, reverse_static_analysis, robots_and_sitemap, safe_web_indicators, technology, tls_audit
 
 NAME = "RED TEAM HUNTING"
 BRAND = "M4zk1pL4y Scurity"
@@ -196,10 +196,11 @@ def doctor():
 
 def main(argv=None):
     ap=argparse.ArgumentParser(prog="redhunt",description="Security toolkit non-destruktif untuk target berizin.")
-    ap.add_argument("command",nargs="?",choices=["recon","subdomain","web","api","vuln","osint","reverse","full","doctor","report","plugins","interactive","scan","tls","ports"],default="doctor")
-    ap.add_argument("target",nargs="?"); ap.add_argument("--input"); ap.add_argument("--output",choices=["table","json","csv","txt","html","md"],default="table"); ap.add_argument("--out"); ap.add_argument("--wordlist"); ap.add_argument("--ports",default="22,80,443,8080,8443"); ap.add_argument("--debug",action="store_true")
+    ap.add_argument("command",nargs="?",choices=["recon","subdomain","web","api","vuln","osint","reverse","full","doctor","report","plugins","interactive","scan","tls","ports","jwt"],default="doctor")
+    ap.add_argument("target",nargs="?"); ap.add_argument("--token"); ap.add_argument("--input"); ap.add_argument("--output",choices=["table","json","csv","txt","html","md"],default="table"); ap.add_argument("--out"); ap.add_argument("--wordlist"); ap.add_argument("--ports",default="22,80,443,8080,8443"); ap.add_argument("--debug",action="store_true")
     args=ap.parse_args(argv); cfg=load_config(); banner() if args.command in {"interactive","full"} else None
     if args.command=="doctor": doctor(); return 0
+    if args.command=="jwt": output(jwt_analyze(args.token or args.target or ""),args.output,args.out); return 0
     if args.command=="plugins":
         loader=PluginLoader(); discovered=loader.discover(); print("PLUGIN | STATUS | PATH")
         for meta in discovered: print(f"{meta.parent.name} | METADATA TERSEDIA | {meta.parent}")
@@ -254,10 +255,10 @@ def main(argv=None):
         host=urllib.parse.urlparse(target).hostname; response=request(target,cfg); data={"target":target,"passive_certificate_transparency":ct_subdomains(host,cfg["timeout"]),"technology":technology(response),"cloud_fingerprint":cloud_fingerprint(response),"passive_osint":passive_osint(target,cfg["timeout"])}
     elif args.command=="web":
         response=request(target,cfg); data=headers(target,cfg)|{"technology":technology(response),"cookies":cookie_audit(response),"robots_sitemap":robots_and_sitemap(target,cfg["timeout"]),"endpoints":endpoints(target,cfg)}
-    elif args.command=="api": data=api_check(target,cfg)|{"cors":cors_audit(target,cfg["timeout"])}
+    elif args.command=="api": data=api_check(target,cfg)|{"document_analysis":api_document_analysis(target,cfg["timeout"]),"cors":cors_audit(target,cfg["timeout"])}
     elif args.command=="vuln": data=vuln_check(target,cfg)|{"cors":cors_audit(target,cfg["timeout"]),"safe_web_indicators":safe_web_indicators(target,cfg["timeout"])}
     elif args.command=="full":
-        host=urllib.parse.urlparse(target).hostname; response=request(target,cfg); data={"target":target,"recon":{"dns":dns(target),"certificate_transparency":ct_subdomains(host,cfg["timeout"]),"tls":tls_audit(host,timeout=cfg["timeout"])},"web":headers(target,cfg)|{"technology":technology(response),"cookies":cookie_audit(response),"robots_sitemap":robots_and_sitemap(target,cfg["timeout"]),"endpoints":endpoints(target,cfg)},"api":api_check(target,cfg)|{"cors":cors_audit(target,cfg["timeout"])},"cloud":cloud_fingerprint(response),"passive_osint":passive_osint(target,cfg["timeout"]),"vulnerability":vuln_check(target,cfg)|{"safe_web_indicators":safe_web_indicators(target,cfg["timeout"])},"started":time.time()}
+        host=urllib.parse.urlparse(target).hostname; response=request(target,cfg); data={"target":target,"recon":{"dns":dns(target),"certificate_transparency":ct_subdomains(host,cfg["timeout"]),"tls":tls_audit(host,timeout=cfg["timeout"])},"web":headers(target,cfg)|{"technology":technology(response),"cookies":cookie_audit(response),"robots_sitemap":robots_and_sitemap(target,cfg["timeout"]),"endpoints":endpoints(target,cfg)},"api":api_check(target,cfg)|{"document_analysis":api_document_analysis(target,cfg["timeout"]),"cors":cors_audit(target,cfg["timeout"])},"cloud":cloud_fingerprint(response),"passive_osint":passive_osint(target,cfg["timeout"]),"vulnerability":vuln_check(target,cfg)|{"safe_web_indicators":safe_web_indicators(target,cfg["timeout"])},"started":time.time()}
     else: data={"error":"Perintah tidak dikenal."}
     status=overall_status(data); output(data,args.output,args.out); Store(config_dir()/"redhunt.db").save(time.strftime("RT-%Y%m%d-%H%M%S"),target,args.command,status,data); return 0
 

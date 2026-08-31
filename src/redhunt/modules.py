@@ -77,6 +77,30 @@ def port_discovery(host, ports, timeout=1, concurrency=10):
     with ThreadPoolExecutor(max_workers=max(1,min(concurrency,50))) as pool: return [f.result() for f in as_completed([pool.submit(probe,p) for p in ports])]
 
 
+def api_document_analysis(base, timeout=10, limiter=None):
+    candidates=["/openapi.json","/swagger.json","/api-docs","/v3/api-docs"]
+    documents=[]
+    for path in candidates:
+        response=fetch(base.rstrip("/")+path,timeout,limiter)
+        if response.get("status") in {200,201}:
+            try:
+                doc=json.loads(response.get("body","")); documents.append({"path":path,"status":response["status"],"openapi":doc.get("openapi"),"swagger":doc.get("swagger"),"paths":len(doc.get("paths",{})) if isinstance(doc,dict) else 0,"evidence":{"response_bytes":len(response.get("body",""))}})
+            except json.JSONDecodeError: documents.append({"path":path,"status":response["status"],"parse":"FAILED","evidence":"Respons aktual bukan JSON."})
+    graphql=fetch(base.rstrip("/")+"/graphql",timeout,limiter,"GET")
+    return {"documents":documents,"graphql":{"status":graphql.get("status"),"content_type":graphql.get("headers",{}).get("Content-Type"),"evidence":"GET /graphql aktual; tidak menjalankan introspection atau mutation."}}
+
+
+def jwt_analyze(token):
+    import base64
+    parts=token.split(".") if isinstance(token,str) else []
+    if len(parts)!=3: return {"status":"NOT DETECTED","reason":"format JWT tidak ditemukan"}
+    decoded=[]
+    for part in parts[:2]:
+        try: decoded.append(json.loads(base64.urlsafe_b64decode(part+"="*(-len(part)%4)).decode()))
+        except (ValueError,UnicodeDecodeError): return {"status":"INCONCLUSIVE","reason":"segmen JWT tidak dapat di-decode"}
+    return {"status":"DETECTED","header":decoded[0],"claims":decoded[1],"signature_present":bool(parts[2]),"verified":False,"warning":"Analisis ini tidak memverifikasi atau memalsukan token."}
+
+
 def cloud_fingerprint(response, dns_data=None):
     headers={k.lower():v for k,v in response.get("headers",{}).items()}; body=response.get("body","").lower(); server=headers.get("server","").lower(); observed=[]
     indicators={"AWS":["amazonaws.com","x-amz-"],"Azure":["azurewebsites.net","azure"],"GCP":["appspot.com","storage.googleapis.com"],"Cloudflare":["cf-ray","cloudflare"],"Vercel":["x-vercel-id","vercel"],"Netlify":["netlify"],"Firebase":["firebaseio.com"],"Supabase":["supabase.co"]}
