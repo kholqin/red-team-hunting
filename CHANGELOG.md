@@ -183,3 +183,10 @@ Semua perubahan penting pada proyek ini dicatat di dokumen ini.
 
 - Menjalankan `python redhunt.py` tanpa subcommand kini langsung membuka menu interaktif 120 fitur.
 - Menu meminta target atau path setelah feature ID dipilih dan menjalankan executor backend yang sesuai.
+
+## [Unreleased]
+
+### Diubah
+
+- Header menu utama kini menampilkan `M4zk1pLay Hunting` sebagai banner, blok `DISCLAIMER`, label `red_team Tools`, indikator keselamatan, kemudian 120 opsi fitur.
+- Smoke test memverifikasi urutan header dan keberadaan BB-01, OS-01, serta RE-01 pada menu.

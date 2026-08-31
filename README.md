@@ -225,3 +225,7 @@ python redhunt.py
 ```
 
 Perintah administratif tetap tersedia secara eksplisit, misalnya `python redhunt.py doctor`, `python redhunt.py features`, dan `python redhunt.py --help`.
+
+## Header menu utama
+
+Saat tools dibuka, urutan tampilan sekarang adalah banner besar **M4zk1pLay Hunting**, blok **DISCLAIMER**, label kecil **red_team Tools**, indikator Safe Mode dan scope enforcement, kemudian menu tiga kolom berisi 120 pilihan fitur. Pengguna baru diminta memilih fitur setelah seluruh disclaimer dan menu terlihat.
