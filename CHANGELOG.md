@@ -21,3 +21,11 @@ Semua perubahan penting pada proyek ini dicatat di dokumen ini.
 - Integrasi Nmap, Nuclei, Subfinder, Amass, FFUF, Gobuster, Jadx, Apktool, dan Radare2 belum dieksekusi otomatis.
 - Belum semua target 50 fitur bug bounty, 50 OSINT, dan 20 reverse engineering tersedia; fitur yang belum ada tidak ditampilkan sebagai hasil palsu.
 - Rate limit dan concurrency konfigurasi telah disiapkan, tetapi versi awal menjalankan pipeline secara terbatas dan serial untuk menjaga keselamatan.
+
+## [Unreleased]
+
+### Diubah
+
+- Menegaskan bahwa tool tidak menyediakan demo output, dummy output, hasil hardcoded, atau fake finding.
+- `vuln` kini menyimpan evidence respons aktual, status `DETECTED`, `NOT DETECTED`, atau `INCONCLUSIVE`, dan tidak membuat finding ketika request gagal.
+- Menambahkan finding berbasis observasi aktual untuk security header yang hilang serta CORS wildcard yang benar-benar diterima.

@@ -115,11 +115,23 @@ def api_check(target,cfg):
     return {"candidates":found,"tested_paths":4}
 
 def vuln_check(target,cfg):
-    result={"checks":[],"findings":[]}; base=target
-    s,h,b,_=request(base,cfg)
-    result["checks"].append({"name":"security_headers","status":s,"missing":headers(base,cfg)["missing_security_headers"]})
-    acao=h.get("Access-Control-Allow-Origin") or h.get("access-control-allow-origin")
-    if acao=="*": result["findings"].append(asdict(Finding("RT-001","CORS wildcard","MEDIUM",80,target,"/","","GET","Access-Control-Allow-Origin: *","Origin policy may allow unintended cross-origin reads.","Restrict allowed origins to trusted origins.",time.strftime("%Y-%m-%dT%H:%M:%SZ",time.gmtime()))))
+    result={"checks":[],"findings":[],"status":"INCONCLUSIVE"}; s,h,b,lat=request(target,cfg)
+    if not s:
+        result["checks"].append({"name":"http_request","status":"FAILED","evidence":h.get("error","request failed")})
+        return result
+    header_names={k.lower():v for k,v in h.items()}
+    required=["content-security-policy","strict-transport-security","x-frame-options","x-content-type-options","referrer-policy","permissions-policy"]
+    missing=[name for name in required if name not in header_names]
+    result["checks"].append({"name":"security_headers","status":"DETECTED" if missing else "NOT DETECTED","http_status":s,"latency":round(lat,3),"missing":missing,"evidence":{"response_headers":h}})
+    finding_id=1
+    for name in missing:
+        severity="LOW" if name != "strict-transport-security" or not target.lower().startswith("https://") else "MEDIUM"
+        result["findings"].append(asdict(Finding(f"RT-{finding_id:03d}",f"Security header tidak ada: {name}",severity,95,target,"/","","GET",f"Header {name} tidak ditemukan pada respons HTTP status {s}.","Kontrol keamanan browser yang terkait belum terlihat pada respons ini.",f"Tinjau dan tambahkan header {name} sesuai kebutuhan aplikasi.",time.strftime("%Y-%m-%dT%H:%M:%SZ",time.gmtime()))))
+        finding_id += 1
+    acao=header_names.get("access-control-allow-origin")
+    if acao == "*":
+        result["findings"].append(asdict(Finding(f"RT-{finding_id:03d}","CORS wildcard","MEDIUM",95,target,"/","","GET","Respons aktual memuat Access-Control-Allow-Origin: *.","Origin mana pun dapat diizinkan oleh kebijakan CORS; dampak bergantung pada jenis data dan kredensial.","Batasi origin ke daftar origin tepercaya dan tinjau penggunaan kredensial CORS.",time.strftime("%Y-%m-%dT%H:%M:%SZ",time.gmtime()))))
+    result["status"]="DETECTED" if result["findings"] else "NOT DETECTED"
     return result
 
 def reverse(path: str):

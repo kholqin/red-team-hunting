@@ -98,3 +98,13 @@ Test tidak mengakses target internet secara otomatis. Fokus pengujian unit adala
 ## Disclaimer
 
 Lihat [DISCLAIMER.md](DISCLAIMER.md). Dengan menjalankan tool ini, pengguna menyatakan memiliki kewenangan untuk menguji target yang dipilih dan menerima tanggung jawab penuh atas penggunaan, dampak, kepatuhan, serta perlindungan data yang terkait.
+
+## Provenance finding
+
+Perintah `redhunt vuln TARGET` hanya membuat finding apabila pemeriksaan aktual memperoleh evidence dari target, misalnya header HTTP yang benar-benar tidak ada atau nilai CORS yang benar-benar diterima dalam respons. Jika request gagal, hasilnya `INCONCLUSIVE` dan tidak ada finding yang dibuat. Jika tidak ada indikator, statusnya `NOT DETECTED`. Tidak tersedia mode demo, data contoh, hasil hardcoded, atau fake finding.
+
+Gunakan hanya pada target yang berada dalam scope dan telah memperoleh izin. Contoh berikut melakukan pemeriksaan nyata terhadap target yang Anda miliki:
+
+```bash
+redhunt vuln https://target-berizin.example --output json --out findings.json
+```
