@@ -244,3 +244,17 @@ Pipeline tidak menganggap semua target sebagai website dan tidak membuat finding
 ## Verifikasi dan Bahasa Indonesia
 
 Engine pemeriksaan HTTP kini menyimpan fingerprint response pertama dan pengulangan untuk mengurangi false positive. Finding header hanya berstatus terdeteksi pada hasil agregat bila hasil pengulangan konsisten; jika response berubah atau pengulangan gagal, status menjadi belum konklusif. Nilai status dan label field pada output JSON, CSV, Markdown, HTML, dan tabel diterjemahkan ke Bahasa Indonesia untuk pembacaan operator, sementara feature ID tetap dipertahankan agar dapat diotomatisasi.
+
+## Verifikasi multi-pass
+
+Untuk meningkatkan keandalan hasil, pemeriksaan vulnerability HTTP dapat dijalankan beberapa kali. Engine menyimpan fingerprint dan daftar indikator pada setiap pass. Finding hanya berstatus `TERDETEKSI` ketika indikator konsisten; perubahan response menghasilkan `BELUM KONKLUSIF`.
+
+```bash
+python3 redhunt.py vuln https://target-berizin.example \
+  --verify-passes 3 \
+  --verify-delay 1 \
+  --output json \
+  --out laporan-verifikasi.json
+```
+
+`--verify-passes` dibatasi 2 sampai 5 pass dan `--verify-delay` dibatasi maksimal 30 detik. Pengulangan ini hanya memakai request pemeriksaan yang aman dan tidak melakukan mutasi data.

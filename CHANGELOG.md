@@ -212,3 +212,10 @@ Repository kini memiliki panduan platform terpadu di `docs/PLATFORM_GUIDE.md` un
 - Decision engine untuk fingerprint response dan verifikasi konsistensi melalui pengulangan evidence.
 - Output tabel, JSON, CSV, Markdown, dan HTML dengan status serta label field Bahasa Indonesia.
 - Finding yang tidak konsisten diturunkan menjadi `BELUM KONKLUSIF`, bukan dinyatakan terverifikasi.
+
+## [Unreleased]
+
+### Ditambahkan
+
+- Verifikasi multi-pass dengan 2–5 pengulangan, jeda terkontrol, fingerprint evidence, dan status `TERVERIFIKASI`, `TIDAK KONSISTEN`, atau `BELUM KONKLUSIF`.
+- Opsi CLI `--verify-passes` dan `--verify-delay` untuk mengatur pengulangan pemeriksaan aman.

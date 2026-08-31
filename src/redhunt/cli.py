@@ -159,12 +159,22 @@ def vuln_check(target,cfg):
         result["checks"].append({"name":"http_request","status":"FAILED","evidence":h.get("error","request failed")})
         return result
     s2,h2,b2,lat2=request(target,cfg)
+    repeat_observations=[]
+    requested_passes=max(2,min(int(cfg.get("verify_passes",3)),5))
+    for _ in range(2,requested_passes):
+        if cfg.get("verify_delay",0): time.sleep(float(cfg["verify_delay"]))
+        sp,hp,bp,lp=request(target,cfg)
+        if sp:
+            repeat_observations.append({"missing":[name for name in ["content-security-policy","strict-transport-security","x-frame-options","x-content-type-options","referrer-policy","permissions-policy"] if name not in {k.lower() for k in hp}],"status":sp,"fingerprint":response_fingerprint(sp,hp,bp)})
     header_names={k.lower():v for k,v in h.items()}
     required=["content-security-policy","strict-transport-security","x-frame-options","x-content-type-options","referrer-policy","permissions-policy"]
     missing=[name for name in required if name not in header_names]
     missing2=[name for name in required if name not in {k.lower() for k in h2}]
-    verification=verify_consistent([{"missing":missing},{"missing":missing2}],"missing") if s2 else {"status":"INCONCLUSIVE","reason":"response kedua gagal"}
-    result["checks"].append({"name":"security_headers","status":"DETECTED" if missing else "NOT DETECTED","verification_status":verification["status"],"http_status":s,"latency":round(lat,3),"missing":missing,"evidence":{"response_headers":h,"response_fingerprint":response_fingerprint(s,h,b),"repeat_fingerprint":response_fingerprint(s2,h2,b2) if s2 else None}})
+    observations=[{"missing":missing,"status":s,"fingerprint":response_fingerprint(s,h,b)}]
+    if s2: observations.append({"missing":missing2,"status":s2,"fingerprint":response_fingerprint(s2,h2,b2)})
+    observations.extend(repeat_observations)
+    verification=verify_consistent(observations,"missing") if len(observations)>=2 else {"status":"INCONCLUSIVE","reason":"response pengulangan gagal"}
+    result["checks"].append({"name":"security_headers","status":"DETECTED" if missing else "NOT DETECTED","verification_status":verification["status"],"http_status":s,"latency":round(lat,3),"missing":missing,"evidence":{"response_headers":h,"response_fingerprint":response_fingerprint(s,h,b),"pass_fingerprints":[x["fingerprint"] for x in observations],"jumlah_pass":len(observations)}})
     finding_id=1
     for name in missing:
         severity="LOW" if name != "strict-transport-security" or not target.lower().startswith("https://") else "MEDIUM"
@@ -237,9 +247,9 @@ def doctor():
 def main(argv=None):
     ap=argparse.ArgumentParser(prog="redhunt",description="Security toolkit non-destruktif untuk target berizin.")
     ap.add_argument("command",nargs="?",choices=["recon","subdomain","web","api","vuln","osint","bugbounty","reverse","full","doctor","report","plugins","interactive","scan","tls","ports","jwt","source","features","feature"],default="interactive")
-    ap.add_argument("target",nargs="?"); ap.add_argument("--path"); ap.add_argument("--token"); ap.add_argument("--input"); ap.add_argument("--output",choices=["table","json","csv","txt","html","md"],default="table"); ap.add_argument("--out"); ap.add_argument("--wordlist"); ap.add_argument("--ports",default="22,80,443,8080,8443"); ap.add_argument("--profile",choices=sorted(PROFILES),default=None); ap.add_argument("--debug",action="store_true")
+    ap.add_argument("target",nargs="?"); ap.add_argument("--path"); ap.add_argument("--token"); ap.add_argument("--input"); ap.add_argument("--output",choices=["table","json","csv","txt","html","md"],default="table"); ap.add_argument("--out"); ap.add_argument("--wordlist");     ap.add_argument("--ports",default="22,80,443,8080,8443"); ap.add_argument("--profile",choices=sorted(PROFILES),default=None); ap.add_argument("--verify-passes",type=int,default=3); ap.add_argument("--verify-delay",type=float,default=0.0); ap.add_argument("--debug",action="store_true")
     args=ap.parse_args(argv)
-    try: cfg=apply_profile(load_config(),args.profile)
+    try: cfg=apply_profile(load_config(),args.profile); cfg["verify_passes"]=args.verify_passes; cfg["verify_delay"]=args.verify_delay
     except ValueError as exc: say("GAGAL",str(exc)); return 2
     banner() if args.command in {"interactive","full"} else None
     if args.command=="doctor": doctor(); return 0
