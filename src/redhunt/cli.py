@@ -10,6 +10,7 @@ from .dispatch import execute
 from .core import PluginLoader
 from .language import analyze_path
 from .osint import osint_run
+from .profiles import PROFILES, apply_profile
 from .ui import banner as neon_banner, menu as neon_menu
 from .modules import api_document_analysis, cloud_fingerprint, cookie_audit, cors_audit, ct_subdomains, jwt_analyze, passive_osint, port_discovery, reverse_static_analysis, robots_and_sitemap, safe_web_indicators, technology, tls_audit
 
@@ -216,8 +217,11 @@ def doctor():
 def main(argv=None):
     ap=argparse.ArgumentParser(prog="redhunt",description="Security toolkit non-destruktif untuk target berizin.")
     ap.add_argument("command",nargs="?",choices=["recon","subdomain","web","api","vuln","osint","bugbounty","reverse","full","doctor","report","plugins","interactive","scan","tls","ports","jwt","source","features","feature"],default="doctor")
-    ap.add_argument("target",nargs="?"); ap.add_argument("--path"); ap.add_argument("--token"); ap.add_argument("--input"); ap.add_argument("--output",choices=["table","json","csv","txt","html","md"],default="table"); ap.add_argument("--out"); ap.add_argument("--wordlist"); ap.add_argument("--ports",default="22,80,443,8080,8443"); ap.add_argument("--debug",action="store_true")
-    args=ap.parse_args(argv); cfg=load_config(); banner() if args.command in {"interactive","full"} else None
+    ap.add_argument("target",nargs="?"); ap.add_argument("--path"); ap.add_argument("--token"); ap.add_argument("--input"); ap.add_argument("--output",choices=["table","json","csv","txt","html","md"],default="table"); ap.add_argument("--out"); ap.add_argument("--wordlist"); ap.add_argument("--ports",default="22,80,443,8080,8443"); ap.add_argument("--profile",choices=sorted(PROFILES),default=None); ap.add_argument("--debug",action="store_true")
+    args=ap.parse_args(argv)
+    try: cfg=apply_profile(load_config(),args.profile)
+    except ValueError as exc: say("GAGAL",str(exc)); return 2
+    banner() if args.command in {"interactive","full"} else None
     if args.command=="doctor": doctor(); return 0
     if args.command=="jwt": output(jwt_analyze(args.token or args.target or ""),args.output,args.out); return 0
     if args.command=="bugbounty":

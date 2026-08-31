@@ -146,3 +146,11 @@ Semua perubahan penting pada proyek ini dicatat di dokumen ini.
 - Fixture HTTP lab lokal yang bind hanya ke `127.0.0.1` untuk menyediakan input aktual bagi audit header, cookie, CORS, API, robots, sitemap, security.txt, JavaScript, dan marker aman.
 - Validasi nyata terhadap fixture melalui command `bugbounty` dan `osint`.
 - Perbaikan normalisasi respons HTTP pada command OSINT dan sanitasi header sensitif pada request evidence.
+
+## [Unreleased]
+
+### Ditambahkan
+
+- Profile runtime `PASSIVE`, `SAFE`, `STANDARD`, `AGGRESSIVE`, dan `DEEP` dengan parameter timeout, rate limit, concurrency, crawl depth, dan active-testing policy.
+- `AGGRESSIVE` memperluas discovery secara bounded namun tetap memaksa safe mode dan memblokir operasi destruktif, credential abuse, DoS, persistence, serta malware deployment.
+- Validasi CLI profile dan quality gate untuk profile baru.

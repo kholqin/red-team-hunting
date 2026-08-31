@@ -181,3 +181,14 @@ Dispatcher memvalidasi ID terhadap katalog, menjalankan executor kategori yang s
 ## Fixture lab lokal untuk memenuhi prasyarat
 
 Direktori `lab/` berisi fixture HTTP yang hanya bind ke `127.0.0.1:18080`. Fixture ini menyediakan response aktual untuk header audit, cookie, CORS OPTIONS, robots.txt, sitemap.xml, OpenAPI, GraphQL GET, security.txt, JavaScript endpoint, debug marker, dan reflected marker. Jalankan `python3 lab/fixture_server.py`, lalu pindai hanya alamat lokal tersebut. Fixture dipakai untuk memverifikasi jalur executor; finding yang muncul berlaku untuk fixture, bukan otomatis untuk sistem produksi.
+
+## Scan profiles
+
+CLI kini menerima profile `passive`, `safe`, `standard`, `aggressive`, dan `deep`. Profile mengatur timeout, rate limit, concurrency, kedalaman crawling, dan apakah active testing diizinkan. Profile `aggressive` memperluas discovery dan recursive workflow, tetapi tetap memaksa `safe_mode` dan tidak mengizinkan DROP, DELETE, TRUNCATE, ALTER, UPDATE, INSERT, credential stuffing, password spraying, denial-of-service, persistence, malware deployment, atau penghancuran data.
+
+```bash
+python3 redhunt.py full https://target-berizin.example --profile aggressive --output json --out report.json
+python3 redhunt.py full https://target-berizin.example --profile deep --output html --out report.html
+```
+
+Profile tidak mengubah status evidence menjadi sukses. Jika target tidak merespons, dependency tidak tersedia, atau bukti tidak cukup, output tetap menunjukkan kegagalan atau status `INCONCLUSIVE`.
