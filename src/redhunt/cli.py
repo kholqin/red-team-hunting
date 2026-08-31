@@ -7,6 +7,7 @@ from typing import Any
 from .catalog import catalog, counts
 from .core import PluginLoader
 from .language import analyze_path
+from .osint import osint_run
 from .modules import api_document_analysis, cloud_fingerprint, cookie_audit, cors_audit, ct_subdomains, jwt_analyze, passive_osint, port_discovery, reverse_static_analysis, robots_and_sitemap, safe_web_indicators, technology, tls_audit
 
 NAME = "RED TEAM HUNTING"
@@ -263,7 +264,7 @@ def main(argv=None):
                     except socket.gaierror: continue
                 data["wordlist_subdomains"]={"tested":len(candidates),"resolved":resolved}
     elif args.command=="osint":
-        host=urllib.parse.urlparse(target).hostname; response=request(target,cfg); data={"target":target,"passive_certificate_transparency":ct_subdomains(host,cfg["timeout"]),"technology":technology(response),"cloud_fingerprint":cloud_fingerprint(response),"passive_osint":passive_osint(target,cfg["timeout"])}
+        host=urllib.parse.urlparse(target).hostname; response=request(target,cfg); ct=ct_subdomains(host,cfg["timeout"]); dns_data=dns(target); tech_data=technology(response); cloud_data=cloud_fingerprint(response); rs=robots_and_sitemap(target,cfg["timeout"]); data={"target":target,"modules":osint_run(target,cfg["timeout"],{"body":response[2],"headers":response[1],"ips":dns_data.get("ips",[]),"ct":ct.get("subdomains",[]),"tls":tls_audit(host,timeout=cfg["timeout"]),"technology":tech_data,"cloud":cloud_data,"robots":rs.get("robots"),"sitemap":rs.get("sitemap"),"api":api_check(target,cfg),"security_txt":passive_osint(target,cfg["timeout"]).get("security_txt",{})})}
     elif args.command=="web":
         response=request(target,cfg); data=headers(target,cfg)|{"technology":technology(response),"cookies":cookie_audit(response),"robots_sitemap":robots_and_sitemap(target,cfg["timeout"]),"endpoints":endpoints(target,cfg)}
     elif args.command=="api": data=api_check(target,cfg)|{"document_analysis":api_document_analysis(target,cfg["timeout"]),"cors":cors_audit(target,cfg["timeout"])}

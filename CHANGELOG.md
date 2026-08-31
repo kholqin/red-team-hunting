@@ -89,3 +89,13 @@ Semua perubahan penting pada proyek ini dicatat di dokumen ini.
 - Katalog terstruktur untuk seluruh 50 bug bounty, 50 OSINT, dan 20 reverse engineering dengan ID unik, executor, safety class, dan status yang dapat diaudit.
 - Command `redhunt features` dengan filter kategori untuk meninjau coverage dan mencegah klaim fitur yang belum memiliki backend.
 - Test katalog memastikan jumlah 120 fitur dan keunikan ID.
+
+## [Unreleased]
+
+### Ditambahkan
+
+- Executor `osint_run` untuk seluruh 50 modul OSINT dengan ID `OS-01` sampai `OS-50`.
+- Normalisasi output setiap modul ke `id`, `name`, `status`, `data`, dan `evidence`.
+- Collector nyata untuk DNS/IP/PTR, CT, TLS, GitHub public search, historical URL, technology/CMS/JS/WAF/CDN/cloud, email, URL/graph, API documentation, security.txt, robots, dan sitemap.
+- Status `SKIPPED`, `NOT TESTED`, dan `INCONCLUSIVE` untuk sumber yang memerlukan input atau provider tambahan, sehingga tidak berubah menjadi finding palsu.
+- Integration test yang mengeksekusi dan memvalidasi 50 executor OSINT.
